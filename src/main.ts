@@ -22,7 +22,7 @@ const codemod = Args.choice<string>(
   Args.withDescription("The code modification to run"),
 )
 
-const run = Command.make("codemod", {
+const run = Command.make("effect-codemod", {
   codemod,
   paths: Args.text({ name: "paths" }).pipe(
     Args.repeated,
