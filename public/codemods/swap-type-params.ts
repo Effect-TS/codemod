@@ -15,6 +15,17 @@ export default function transformer(file: cs.FileInfo, api: cs.API) {
     swapSchema(ast, j)
   })
 
+  root.find(j.CallExpression).forEach(ast => {
+    if (
+      ast.value.typeParameters?.params.length === 3
+      && expressionHasName(ast.value.callee, "async")
+    ) {
+      ast.value.typeParameters.params.reverse()
+      popNever(ast.value.typeParameters.params)
+      popNever(ast.value.typeParameters.params)
+    }
+  })
+
   return root.toSource()
 }
 
@@ -59,6 +70,20 @@ const popNever = (params: Array<k.TSTypeKind>) => {
     && params[params.length - 1].type === "TSNeverKeyword"
   ) {
     params.pop()
+  }
+}
+
+const expressionHasName = (ast: k.ExpressionKind, name: string): boolean => {
+  switch (ast.type) {
+    case "Identifier": {
+      return ast.name === name
+    }
+    case "MemberExpression": {
+      return expressionHasName(ast.property, name)
+    }
+    default: {
+      return false
+    }
   }
 }
 
