@@ -4,7 +4,6 @@ import * as Args from "@effect/cli/Args"
 import * as Command from "@effect/cli/Command"
 import * as Options from "@effect/cli/Options"
 import * as NodeContext from "@effect/platform-node/NodeContext"
-import { runMain } from "@effect/platform-node/Runtime"
 import * as Console from "effect/Console"
 import * as Effect from "effect/Effect"
 import * as ReadonlyArray from "effect/ReadonlyArray"
@@ -31,7 +30,7 @@ const codemod = Args.choice(
   Args.withDescription("The code modification to run"),
 )
 
-const run = Command.make("effect-codemod", {
+const run = Command.make("codemod", {
   codemod,
   paths: Args.text({ name: "paths" }).pipe(
     Args.repeated,
@@ -70,5 +69,5 @@ const run = Command.make("effect-codemod", {
 run(process.argv).pipe(
   Effect.provide(NodeContext.layer),
   Effect.tapDefect(Console.error),
-  runMain,
+  Effect.runFork,
 )
