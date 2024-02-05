@@ -47,7 +47,7 @@ const run = Command.make("codemod", {
     )
   ),
   Command.run({
-    name: "Effect Codemod's",
+    name: "Effect Codemods",
     version: "0.0.0",
   }),
 )
