@@ -5,6 +5,7 @@ import * as Command from "@effect/cli/Command"
 import * as Options from "@effect/cli/Options"
 import * as NodeContext from "@effect/platform-node/NodeContext"
 import { runMain } from "@effect/platform-node/Runtime"
+import * as Console from "effect/Console"
 import * as Effect from "effect/Effect"
 import * as jscodeshift from "jscodeshift/src/Runner"
 import * as Fs from "node:fs"
@@ -54,6 +55,6 @@ const run = Command.make("codemod", {
 
 run(process.argv).pipe(
   Effect.provide(NodeContext.layer),
-  Effect.tapErrorCause(Effect.logError),
+  Effect.tapDefect(Console.error),
   runMain,
 )
