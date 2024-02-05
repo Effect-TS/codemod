@@ -10,7 +10,9 @@ const read = pipe(
     name: json.name,
     version: json.version,
     description: json.description,
-    bin: "main.js",
+    bin: {
+      "effect-codemod": "main.js",
+    },
     engines: json.engines,
     repository: json.repository,
     author: json.author,

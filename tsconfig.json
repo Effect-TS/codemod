@@ -6,7 +6,9 @@
     "noEmit": true,
     "module": "commonjs",
     "moduleResolution": "node",
-    "lib": ["es6"],
+    "lib": [
+      "es6"
+    ],
     "sourceMap": false,
     "strict": true,
     "noImplicitReturns": true,
@@ -16,7 +18,13 @@
     "forceConsistentCasingInFileNames": true,
     "stripInternal": true,
     "skipLibCheck": true,
-    "types": ["vitest/globals"],
+    "types": [
+      "vitest/globals"
+    ],
   },
-  "include": ["./src", "./public/codemods", "./test"],
+  "include": [
+    "./src",
+    "./public/codemods",
+    "./test"
+  ],
 }

@@ -5,6 +5,7 @@
     "access": "public",
     "directory": "dist"
   },
+  "packageManager": "pnpm@8.12.1",
   "description": "Code mod's for the Effect ecosystem",
   "engines": {
     "node": ">=16.17.1"
