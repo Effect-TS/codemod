@@ -15,6 +15,10 @@ export default function transformer(file: cs.FileInfo, api: cs.API) {
     swapSchema(ast, j)
   })
 
+  root.find(j.VariableDeclaration).forEach(ast => {
+    fixTagIdentifier(ast, j)
+  })
+
   root.find(j.CallExpression).forEach(ast => {
     if (
       ast.value.typeParameters?.params.length === 3
@@ -23,6 +27,10 @@ export default function transformer(file: cs.FileInfo, api: cs.API) {
       ast.value.typeParameters.params.reverse()
       popNever(ast.value.typeParameters.params)
       popNever(ast.value.typeParameters.params)
+    }
+
+    if (expressionHasName(ast.value.callee, "Tag")) {
+      expressionRename(ast.value.callee, "GenericTag")
     }
   })
 
@@ -87,6 +95,21 @@ const expressionHasName = (ast: k.ExpressionKind, name: string): boolean => {
   }
 }
 
+const expressionRename = (ast: k.ExpressionKind, name: string): void => {
+  switch (ast.type) {
+    case "Identifier": {
+      ast.name = name
+      return
+    }
+    case "MemberExpression": {
+      return expressionRename(ast.property, name)
+    }
+    default: {
+      return
+    }
+  }
+}
+
 const hasName = (reference: cs.ASTPath<cs.TSTypeReference>, name: string) => {
   const initial = reference.value.typeName
   const loop = (node: typeof initial): boolean => {
@@ -106,6 +129,30 @@ const hasName = (reference: cs.ASTPath<cs.TSTypeReference>, name: string) => {
     }
   }
   return loop(initial)
+}
+
+const fixTagIdentifier = (
+  ast: cs.ASTPath<cs.VariableDeclaration>,
+  j: cs.API["jscodeshift"],
+) => {
+  if (ast.value.declarations.length === 1) {
+    const declaration = ast.value.declarations[0]
+    if (
+      declaration.type === "VariableDeclarator"
+      && declaration.init
+      && declaration.init.type === "CallExpression"
+    ) {
+      const init = declaration.init
+      const callee = init.callee
+      if (
+        expressionHasName(callee, "Tag")
+        && init.arguments.length === 0
+        && declaration.id.type === "Identifier"
+      ) {
+        init.arguments.push(j.stringLiteral(`@services/${declaration.id.name}`))
+      }
+    }
+  }
 }
 
 //
