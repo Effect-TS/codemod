@@ -8,18 +8,12 @@ import * as Console from "effect/Console"
 import * as Effect from "effect/Effect"
 import * as ReadonlyArray from "effect/ReadonlyArray"
 import * as jscodeshift from "jscodeshift/src/Runner"
-import assert from "node:assert"
 import * as Fs from "node:fs"
 import * as Path from "node:path"
 
-const codemodFiles = Fs.readdirSync(`${__dirname}/codemods`)
-assert(
-  ReadonlyArray.isNonEmptyReadonlyArray(codemodFiles),
-  "Could not find any code mod files",
-)
 const codemod = Args.choice(
   ReadonlyArray.map(
-    codemodFiles,
+    Fs.readdirSync(`${__dirname}/codemods`),
     file => [
       Path.basename(file, ".ts"),
       Path.join(`${__dirname}/codemods`, file),
@@ -34,7 +28,6 @@ const run = Command.make("codemod", {
   codemod,
   paths: Args.text({ name: "paths" }).pipe(
     Args.repeated,
-    Args.map(ReadonlyArray.fromIterable), // TODO: Remove when `Args.repeated` returns Array
     Args.withDescription("The paths to run the codemod on"),
   ),
   options: {
