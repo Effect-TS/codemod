@@ -1,4 +1,4 @@
-lockfileVersion: '6.1'
+lockfileVersion: '6.0'
 
 settings:
   autoInstallPeers: true
@@ -22,6 +22,9 @@ devDependencies:
   '@effect/eslint-plugin':
     specifier: ^0.1.2
     version: 0.1.2
+  '@effect/language-service':
+    specifier: ^0.1.0
+    version: 0.1.0
   '@effect/platform-node':
     specifier: ^0.42.7
     version: 0.42.7(@effect/platform@0.43.7)(effect@2.2.3)
@@ -784,6 +787,10 @@ packages:
       '@dprint/formatter': 0.2.0
       '@dprint/typescript': 0.85.1
       diff: 5.1.0
+    dev: true
+
+  /@effect/language-service@0.1.0:
+    resolution: {integrity: sha512-BnlM8LlaqCAYgdRfxlbR7gXGh/FD1scL1fPgNVJEPoOM08od1jtJz+iKhwfaud8TPnnhZR+TED2h5ynjanLeCQ==}
     dev: true
 
   /@effect/platform-node@0.42.7(@effect/platform@0.43.7)(effect@2.2.3):

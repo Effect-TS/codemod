@@ -43,6 +43,7 @@
     "@changesets/cli": "^2.27.1",
     "@effect/cli": "0.31.7",
     "@effect/eslint-plugin": "^0.1.2",
+    "@effect/language-service": "^0.1.0",
     "@effect/platform-node": "^0.42.7",
     "@effect/schema": "^0.61.5",
     "@types/doctrine": "0.0.9",
