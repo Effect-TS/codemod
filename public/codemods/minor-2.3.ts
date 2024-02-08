@@ -10,9 +10,19 @@ export default function transformer(file: cs.FileInfo, api: cs.API) {
     swapParams(ast, "Effect", 3)
     swapParams(ast, "Stream", 3)
     swapParams(ast, "STM", 3)
+    swapParams(ast, "STMGen", 3)
     swapParams(ast, "Layer", 3)
     swapParams(ast, "Exit", 2)
+    swapParams(ast, "Take", 2)
+    swapParams(ast, "Fiber", 2)
+    swapParams(ast, "FiberRuntime", 2)
+    swapParams(ast, "Request", 2)
+    swapParams(ast, "Resource", 2)
+    swapParams(ast, "TExit", 2)
+    swapParams(ast, "Deferred", 2)
+    swapParams(ast, "TDeferred", 2)
     swapSchema(ast, j)
+    swapChannel(ast, j)
   })
 
   root.find(j.VariableDeclaration).forEach(ast => {
@@ -78,6 +88,51 @@ const popNever = (params: Array<k.TSTypeKind>) => {
     && params[params.length - 1].type === "TSNeverKeyword"
   ) {
     params.pop()
+  }
+}
+
+const popDefaults = (size: number, defaults: ReadonlyArray<string>) => {
+  const defaultDiff = size - defaults.length
+  return (j: cs.API["jscodeshift"], params: Array<k.TSTypeKind>) => {
+    for (let i = params.length; i > 0; i--) {
+      const def = defaults[i - 1 - defaultDiff]
+      const param = params[i - 1]
+      if (j(param).toSource() === def) {
+        params.pop()
+      } else {
+        break
+      }
+    }
+  }
+}
+
+const popChannelDefaults = popDefaults(7, [
+  "unknown",
+  "never",
+  "unknown",
+  "void",
+  "unknown",
+  "never",
+])
+const swapChannel = (
+  ast: cs.ASTPath<cs.TSTypeReference>,
+  j: cs.API["jscodeshift"],
+) => {
+  if (
+    hasName(ast, "Channel") && ast.value.typeParameters?.params.length === 7
+  ) {
+    const params = ast.value.typeParameters.params
+    const newParams = [
+      params[5],
+      params[2],
+      params[4],
+      params[1],
+      params[6],
+      params[3],
+      params[0],
+    ]
+    popChannelDefaults(j, newParams)
+    ast.value.typeParameters.params = newParams
   }
 }
 
