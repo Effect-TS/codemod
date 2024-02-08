@@ -46,6 +46,13 @@ export default function transformer(file: cs.FileInfo, api: cs.API) {
     }
   })
 
+  root
+    .find(j.ImportDeclaration)
+    .filter(_ => _.node.source.value === "effect/Context")
+    .find(j.ImportSpecifier)
+    .filter(_ => _.node.imported.name === "Tag")
+    .replaceWith(j.importSpecifier(j.identifier("GenericTag")))
+
   return root.toSource()
 }
 
