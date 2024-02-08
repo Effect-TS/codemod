@@ -30,14 +30,16 @@ export default function transformer(file: cs.FileInfo, api: cs.API) {
   })
 
   root.find(j.CallExpression).forEach(ast => {
-    if (
-      ast.value.typeParameters?.params.length === 3
-      && expressionHasName(ast.value.callee, "async")
-    ) {
-      ast.value.typeParameters.params.reverse()
-      popNever(ast.value.typeParameters.params)
-      popNever(ast.value.typeParameters.params)
-    }
+    swapFunctionCall(ast, "async", 3)
+    swapFunctionCall(ast, "asyncEffect", 3)
+    swapFunctionCall(ast, "asyncEither", 3)
+    swapFunctionCall(ast, "asyncInterrupt", 3)
+    swapFunctionCall(ast, "asyncOption", 3)
+    swapFunctionCall(ast, "asyncScoped", 3)
+
+    swapMethodCall(ast, "Deferred", "make", 2)
+    swapMethodCall(ast, "Deferred", "makeAs", 2)
+    swapMethodCall(ast, "Deferred", "unsafeMake", 2)
 
     if (expressionHasName(ast.value.callee, "Tag")) {
       expressionRename(ast.value.callee, "GenericTag")
@@ -78,6 +80,39 @@ const swapSchema = (
       && j(params[0]).toSource() === j(params[1]).toSource()
     ) {
       params.pop()
+    }
+  }
+}
+
+const swapFunctionCall = (
+  ast: cs.ASTPath<cs.CallExpression>,
+  name: string,
+  size: number,
+) => {
+  if (
+    ast.value.typeParameters?.params.length === size
+    && expressionHasName(ast.value.callee, name)
+  ) {
+    ast.value.typeParameters.params.reverse()
+    for (let i = 0; i < size - 1; i++) {
+      popNever(ast.value.typeParameters.params)
+    }
+  }
+}
+
+const swapMethodCall = (
+  ast: cs.ASTPath<cs.CallExpression>,
+  object: string,
+  name: string,
+  size: number,
+) => {
+  if (
+    ast.value.typeParameters?.params.length === size
+    && expressionHasPropAccess(ast.value.callee, object, name)
+  ) {
+    ast.value.typeParameters.params.reverse()
+    for (let i = 0; i < size - 1; i++) {
+      popNever(ast.value.typeParameters.params)
     }
   }
 }
@@ -149,6 +184,15 @@ const expressionHasName = (ast: k.ExpressionKind, name: string): boolean => {
     }
   }
 }
+
+const expressionHasPropAccess = (
+  ast: k.ExpressionKind,
+  object: string,
+  prop: string,
+): boolean =>
+  ast.type === "MemberExpression"
+  && ast.object.type === "Identifier" && ast.object.name === object
+  && ast.property.type === "Identifier" && ast.property.name === prop
 
 const expressionRename = (ast: k.ExpressionKind, name: string): void => {
   switch (ast.type) {
