@@ -1,5 +1,11 @@
 # @effect/codemod
 
+## 0.0.4
+
+### Patch Changes
+
+- [#12](https://github.com/Effect-TS/codemod/pull/12) [`ee757b7`](https://github.com/Effect-TS/codemod/commit/ee757b76b0dc878480c4cd4382513948a4ca78a4) Thanks [@tim-smart](https://github.com/tim-smart)! - add Pool to minor 2.3
+
 ## 0.0.3
 
 ### Patch Changes
