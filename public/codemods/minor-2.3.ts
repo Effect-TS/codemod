@@ -21,6 +21,7 @@ export default function transformer(file: cs.FileInfo, api: cs.API) {
     swapParams(ast, "TExit", 2)
     swapParams(ast, "Deferred", 2)
     swapParams(ast, "TDeferred", 2)
+    swapParams(ast, "Pool", 2)
     swapSchema(ast, j)
     swapChannel(ast, j)
   })
