@@ -1,5 +1,13 @@
 # @effect/codemod
 
+## 0.0.5
+
+### Patch Changes
+
+- [#14](https://github.com/Effect-TS/codemod/pull/14) [`e02e19a`](https://github.com/Effect-TS/codemod/commit/e02e19a99a46e5addd8a41a4aef17029f5e8d836) Thanks [@mikearnaldi](https://github.com/mikearnaldi)! - Add codemod for Either
+
+- [#16](https://github.com/Effect-TS/codemod/pull/16) [`66dc95e`](https://github.com/Effect-TS/codemod/commit/66dc95e149ceb4b2dd03887faa91288309f8c902) Thanks [@mikearnaldi](https://github.com/mikearnaldi)! - Add codemod for minor 2.1, adding R to Schema as Schema<R, I, A>
+
 ## 0.0.4
 
 ### Patch Changes
