@@ -8,6 +8,7 @@ export default function transformer(file: cs.FileInfo, api: cs.API) {
 
   forEveryTypeReference(root, j, ast => {
     swapParams(ast, "Either", 2)
+    swapSchedule(ast)
   })
 
   return root.toSource()
@@ -16,6 +17,23 @@ export default function transformer(file: cs.FileInfo, api: cs.API) {
 //
 // utilities
 //
+
+const swapSchedule = (
+  ast: cs.ASTPath<cs.TSTypeReference>,
+) => {
+  if (
+    hasName(ast, "Schedule") && ast.value.typeParameters?.params.length === 3
+  ) {
+    const params = ast.value.typeParameters.params
+    params.reverse()
+    if (params[2].type === "TSNeverKeyword") {
+      popNever(params)
+      if (params[1].type === "TSUnknownKeyword") {
+        popUnknown(params)
+      }
+    }
+  }
+}
 
 const swapParams = (
   ast: cs.ASTPath<cs.TSTypeReference>,
@@ -35,6 +53,15 @@ const popNever = (params: Array<k.TSTypeKind>) => {
   if (
     params.length > 0
     && params[params.length - 1].type === "TSNeverKeyword"
+  ) {
+    params.pop()
+  }
+}
+
+const popUnknown = (params: Array<k.TSTypeKind>) => {
+  if (
+    params.length > 0
+    && params[params.length - 1].type === "TSUnknownKeyword"
   ) {
     params.pop()
   }
