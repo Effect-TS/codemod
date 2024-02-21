@@ -1,5 +1,11 @@
 # @effect/codemod
 
+## 0.0.6
+
+### Patch Changes
+
+- [#17](https://github.com/Effect-TS/codemod/pull/17) [`ed9cf84`](https://github.com/Effect-TS/codemod/commit/ed9cf84147073c12318bc1df5fbe06aa188e5158) Thanks [@mikearnaldi](https://github.com/mikearnaldi)! - Add codemod to swap Schedule params
+
 ## 0.0.5
 
 ### Patch Changes
