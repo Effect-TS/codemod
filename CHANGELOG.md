@@ -1,5 +1,11 @@
 # @effect/codemod
 
+## 0.0.7
+
+### Patch Changes
+
+- [#19](https://github.com/Effect-TS/codemod/pull/19) [`692f7f3`](https://github.com/Effect-TS/codemod/commit/692f7f3cdb21dc3353f2c667f22f48b62e072211) Thanks [@tim-smart](https://github.com/tim-smart)! - add codemod for platform 0.49
+
 ## 0.0.6
 
 ### Patch Changes
