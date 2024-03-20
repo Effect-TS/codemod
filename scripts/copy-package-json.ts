@@ -1,4 +1,5 @@
-import * as FileSystem from "@effect/platform-node/FileSystem"
+import * as FileSystem from "@effect/platform/FileSystem"
+import * as NodeFileSystem from "@effect/platform-node/NodeFileSystem"
 import { Effect, pipe } from "effect"
 import * as path from "node:path"
 
@@ -39,7 +40,7 @@ const program = pipe(
   Effect.sync(() => console.log(`copying package.json to ${pathTo}...`)),
   Effect.flatMap(() => read),
   Effect.flatMap(write),
-  Effect.provide(FileSystem.layer),
+  Effect.provide(NodeFileSystem.layer),
 )
 
 Effect.runPromise(program)
