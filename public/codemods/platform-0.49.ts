@@ -10,8 +10,6 @@ export default function transformer(file: cs.FileInfo, api: cs.API) {
     swapParams(ast, "Client", 3)
     swapParams(ast, "WithResponse", 3)
     swapParams(ast, "HttpApp", 3)
-    swapParams(ast, "Default", 2, { popSize: 2 })
-    swapParams(ast, "Applied", 3)
     swapParams(ast, "Multiplex", 2, { popSize: 2 })
     swapParams(ast, "Router", 2, { popSize: 2 })
     swapParams(ast, "Route", 2, { popSize: 2 })
