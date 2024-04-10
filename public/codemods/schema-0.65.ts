@@ -1,13 +1,17 @@
+/**
+ * test: npx jscodeshift -d -p -t ./public/codemods/schema-0.65.ts test/schema-0.65/NamespaceImport.ts
+ */
+
 import type cs from "jscodeshift"
 
 const findNamespaceName = (
   file: cs.FileInfo,
   api: cs.API,
-  source: string,
+  sources: ReadonlyArray<unknown>,
 ): string | undefined => {
   const j = api.jscodeshift
   const importDeclarations = j(file.source).find(j.ImportDeclaration).filter(
-    path => path.value.source.value === source,
+    path => sources.includes(path.value.source.value),
   )
   if (importDeclarations.length > 0) {
     const name = importDeclarations.find(j.Identifier).get(0).node.name
@@ -31,7 +35,10 @@ const isMemberExpression = (
 export default function transformer(file: cs.FileInfo, api: cs.API) {
   const j = api.jscodeshift
 
-  const namespaceName = findNamespaceName(file, api, "@effect/schema/Schema")
+  const namespaceName = findNamespaceName(file, api, [
+    "@effect/schema/Schema",
+    "@effect/schema",
+  ])
   if (namespaceName === undefined) {
     return file.source
   }
