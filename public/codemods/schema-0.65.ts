@@ -157,9 +157,9 @@ const findNamespaceImport = (
   source: string,
 ): string | undefined => {
   const j = api.jscodeshift
-  const importDeclarations = j(file.source).find(j.ImportDeclaration).filter(
-    path => path.value.source.value === source,
-  )
+  const importDeclarations = j(file.source).find(j.ImportDeclaration, {
+    source: { value: source },
+  })
   if (importDeclarations.length > 0) {
     const name = importDeclarations.find(j.Identifier).get(0).node.name
     if (typeof name === "string") {
@@ -176,25 +176,35 @@ const findNamedImport = (
   name: string,
 ): string | undefined => {
   const j = api.jscodeshift
-  const importDeclarations = j(file.source).find(j.ImportDeclaration).filter(
-    path => path.value.source.value === source,
-  )
-  if (
-    importDeclarations.length > 0
-    && importDeclarations.find(j.Identifier).some(path => {
-      return path.node.name === name
-    })
-  ) {
-    return name
+  const importDeclarations = j(file.source).find(j.ImportDeclaration, {
+    source: { value: source },
+  })
+  if (importDeclarations.length === 0) {
+    return undefined
   }
-  return undefined
+  let out: string = name
+  importDeclarations.forEach(path => {
+    const specifiers = path.value.specifiers
+    if (specifiers) {
+      for (const specifier of specifiers) {
+        if (specifier.type === "ImportSpecifier") {
+          if (specifier.imported.name === name && specifier.local) {
+            out = specifier.local.name
+            break
+          }
+        }
+      }
+    }
+  })
+  return out
 }
 
 // a `null` value means `key.charAt(0).toUpperCase() + key.slice(1)`
 const MemberExpressions = {
-  struct: null,
   string: null,
   number: null,
+  struct: null,
+  array: null,
 }
 
 const isMemberExpression = (
