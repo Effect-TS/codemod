@@ -2,6 +2,7 @@
  * test: npx jscodeshift -d -p -t ./public/codemods/schema-0.65.ts test/schema-0.65/NamespaceImport.ts
  */
 
+import type { ExpressionKind } from "ast-types/gen/kinds"
 import type { namedTypes } from "ast-types/gen/namedTypes"
 import type { NodePath } from "ast-types/lib/node-path"
 import type cs from "jscodeshift"
@@ -11,11 +12,11 @@ type ASTPath<N> = NodePath<N, N>
 export default function transformer(file: cs.FileInfo, api: cs.API) {
   const j = api.jscodeshift
 
-  let namespaceName = findNamespaceImport(file, api, "@effect/schema/Schema")
-  if (namespaceName === undefined) {
-    namespaceName = findNamedImport(file, api, "@effect/schema", "Schema")
-  }
-  if (namespaceName === undefined) {
+  const namespace = orElse(
+    findNamespaceImport(file, api, "@effect/schema/Schema"),
+    () => findNamedImport(file, api, "@effect/schema", "Schema"),
+  )
+  if (namespace === undefined) {
     return file.source
   }
 
@@ -23,228 +24,148 @@ export default function transformer(file: cs.FileInfo, api: cs.API) {
 
   // struct -> Struct, string -> String, etc...
   root
-    .find(j.MemberExpression)
+    .find(j.MemberExpression, {
+      object: {
+        name: namespace,
+      },
+    })
     .forEach(path => {
       const expr = path.value
-      const object = expr.object
-      if (object.type === "Identifier") {
-        if (object.name === namespaceName) {
-          const property = expr.property
-          if (property.type === "Identifier") {
-            const key = property.name
-            // handle API with /bigint/ig
-            if (/bigint/ig.test(key)) {
-              property.name = property.name.replace(/bigint/ig, "BigInt")
-            } else if (isMemberExpression(key)) {
-              const value: string | null = MemberExpressions[key]
-              property.name = value === null
-                ? key.charAt(0).toUpperCase() + key.slice(1)
-                : value
-            }
-          }
+      const property = expr.property
+      if (property.type === "Identifier") {
+        const name = property.name
+        // handle API with /bigint/ig
+        if (/bigint/ig.test(name)) {
+          property.name = property.name.replace(/bigint/ig, "BigInt")
+        } else if (isNameChanged(name)) {
+          const value: string | null = changedNames[name]
+          property.name = value === null
+            ? name.charAt(0).toUpperCase() + name.slice(1)
+            : value
         }
       }
     })
 
-  const strictFalseObjectProperty = j.objectProperty(
-    j.identifier("strict"),
-    j.booleanLiteral(false),
-  )
+  const getDecodeEncodeOptions = (
+    decode: ExpressionKind,
+    encode: ExpressionKind,
+    strictFalse: boolean = false,
+  ) => {
+    const properties = [
+      j.objectProperty(j.identifier("decode"), decode),
+      j.objectProperty(j.identifier("encode"), encode),
+    ]
+    if (strictFalse) {
+      properties.unshift(j.objectProperty(
+        j.identifier("strict"),
+        j.booleanLiteral(false),
+      ))
+    }
+    return j.objectExpression(properties)
+  }
 
-  const replaceTransformFunctions = (
+  const find = (
+    name: string,
+    f: (
+      path: ASTPath<namedTypes.CallExpression>,
+    ) => void,
+  ) =>
+    root
+      .find(j.CallExpression, {
+        callee: {
+          type: "MemberExpression",
+          object: { name: namespace },
+          property: { name },
+        },
+      }).forEach(f)
+
+  const replaceTransformAndTransformOfFailFunctions = (
     path: ASTPath<namedTypes.CallExpression>,
   ) => {
     const args = path.value.arguments
     const hasStrictFalse = args[args.length - 1].type === "ObjectExpression"
     if (hasStrictFalse) {
       if (args.length === 5) {
-        const decodeFn = args[2]
-        const encodeFn = args[3]
+        const decode = args[2]
+        const encode = args[3]
         if (
-          decodeFn.type !== "SpreadElement"
-          && encodeFn.type !== "SpreadElement"
+          decode.type !== "SpreadElement"
+          && encode.type !== "SpreadElement"
         ) {
-          args.splice(
-            2,
-            3,
-            j.objectExpression([
-              strictFalseObjectProperty,
-              j.objectProperty(j.identifier("decode"), decodeFn),
-              j.objectProperty(j.identifier("encode"), encodeFn),
-            ]),
-          )
+          args.splice(2, 3, getDecodeEncodeOptions(decode, encode, true))
         }
       } else if (args.length === 4) {
-        const decodeFn = args[1]
-        const encodeFn = args[2]
+        const decode = args[1]
+        const encode = args[2]
         if (
-          decodeFn.type !== "SpreadElement"
-          && encodeFn.type !== "SpreadElement"
+          decode.type !== "SpreadElement"
+          && encode.type !== "SpreadElement"
         ) {
-          args.splice(
-            1,
-            3,
-            j.objectExpression([
-              strictFalseObjectProperty,
-              j.objectProperty(j.identifier("decode"), decodeFn),
-              j.objectProperty(j.identifier("encode"), encodeFn),
-            ]),
-          )
+          args.splice(1, 3, getDecodeEncodeOptions(decode, encode, true))
         }
       }
     } else {
       if (args.length === 4) {
-        const decodeFn = args[2]
-        const encodeFn = args[3]
+        const decode = args[2]
+        const encode = args[3]
         if (
-          decodeFn.type !== "SpreadElement"
-          && encodeFn.type !== "SpreadElement"
+          decode.type !== "SpreadElement"
+          && encode.type !== "SpreadElement"
         ) {
-          args.splice(
-            2,
-            2,
-            j.objectExpression([
-              j.objectProperty(j.identifier("decode"), decodeFn),
-              j.objectProperty(j.identifier("encode"), encodeFn),
-            ]),
-          )
+          args.splice(2, 2, getDecodeEncodeOptions(decode, encode))
         }
       } else if (args.length === 3) {
-        const decodeFn = args[1]
-        const encodeFn = args[2]
+        const decode = args[1]
+        const encode = args[2]
         if (
-          decodeFn.type !== "SpreadElement"
-          && encodeFn.type !== "SpreadElement"
+          decode.type !== "SpreadElement"
+          && encode.type !== "SpreadElement"
         ) {
-          args.splice(
-            1,
-            2,
-            j.objectExpression([
-              j.objectProperty(j.identifier("decode"), decodeFn),
-              j.objectProperty(j.identifier("encode"), encodeFn),
-            ]),
-          )
+          args.splice(1, 2, getDecodeEncodeOptions(decode, encode))
         }
       }
     }
   }
 
-  // transform
-  root
-    .find(j.CallExpression, {
-      callee: {
-        type: "MemberExpression",
-        object: { name: namespaceName },
-        property: { name: "transform" },
-      },
-    })
-    .forEach(replaceTransformFunctions)
+  find("transform", replaceTransformAndTransformOfFailFunctions)
+  find("transformOrFail", replaceTransformAndTransformOfFailFunctions)
 
-  // transformOrFail
-  root
-    .find(j.CallExpression, {
-      callee: {
-        type: "MemberExpression",
-        object: { name: namespaceName },
-        property: { name: "transformOrFail" },
-      },
-    })
-    .forEach(replaceTransformFunctions)
-
-  // declare
-  root
-    .find(j.CallExpression, {
-      callee: {
-        type: "MemberExpression",
-        object: { name: namespaceName },
-        property: { name: "Declare" },
-      },
-    })
-    .forEach((
-      path: ASTPath<namedTypes.CallExpression>,
-    ) => {
-      const args = path.value.arguments
-      if (args.length >= 3) {
-        const decodeFn = args[1]
-        const encodeFn = args[2]
-        if (
-          decodeFn.type !== "SpreadElement"
-          && encodeFn.type !== "SpreadElement"
-        ) {
-          args.splice(
-            1,
-            2,
-            j.objectExpression([
-              j.objectProperty(j.identifier("decode"), decodeFn),
-              j.objectProperty(j.identifier("encode"), encodeFn),
-            ]),
-          )
-        }
-      }
-    })
-
-  // optionalToRequired
-  root
-    .find(j.CallExpression, {
-      callee: {
-        type: "MemberExpression",
-        object: { name: namespaceName },
-        property: { name: "optionalToRequired" },
-      },
-    })
-    .forEach((
-      path: ASTPath<namedTypes.CallExpression>,
-    ) => {
-      const args = path.value.arguments
-      const decodeFn = args[2]
-      const encodeFn = args[3]
+  find("Declare", path => {
+    const args = path.value.arguments
+    if (args.length >= 3) {
+      const decode = args[1]
+      const encode = args[2]
       if (
-        decodeFn.type !== "SpreadElement"
-        && encodeFn.type !== "SpreadElement"
+        decode.type !== "SpreadElement"
+        && encode.type !== "SpreadElement"
       ) {
-        args.splice(
-          2,
-          2,
-          j.objectExpression([
-            j.objectProperty(j.identifier("decode"), decodeFn),
-            j.objectProperty(j.identifier("encode"), encodeFn),
-          ]),
-        )
+        args.splice(1, 2, getDecodeEncodeOptions(decode, encode))
       }
-    })
+    }
+  })
 
-  // optionalToOptional
-  root
-    .find(j.CallExpression, {
-      callee: {
-        type: "MemberExpression",
-        object: { name: namespaceName },
-        property: { name: "optionalToOptional" },
-      },
-    })
-    .forEach((
-      path: ASTPath<namedTypes.CallExpression>,
-    ) => {
-      const args = path.value.arguments
-      const decodeFn = args[2]
-      const encodeFn = args[3]
-      if (
-        decodeFn.type !== "SpreadElement"
-        && encodeFn.type !== "SpreadElement"
-      ) {
-        args.splice(
-          2,
-          2,
-          j.objectExpression([
-            j.objectProperty(j.identifier("decode"), decodeFn),
-            j.objectProperty(j.identifier("encode"), encodeFn),
-          ]),
-        )
-      }
-    })
+  const replaceOptionalToFunctions = (
+    path: ASTPath<namedTypes.CallExpression>,
+  ) => {
+    const args = path.value.arguments
+    const decode = args[2]
+    const encode = args[3]
+    if (
+      decode.type !== "SpreadElement"
+      && encode.type !== "SpreadElement"
+    ) {
+      args.splice(2, 2, getDecodeEncodeOptions(decode, encode))
+    }
+  }
+
+  find("optionalToRequired", replaceOptionalToFunctions)
+  find("optionalToOptional", replaceOptionalToFunctions)
 
   return root.toSource()
 }
+
+const orElse = <A>(x: A | undefined, f: () => A | undefined): A | undefined =>
+  x === undefined ? f() : x
 
 const findNamespaceImport = (
   file: cs.FileInfo,
@@ -295,7 +216,7 @@ const findNamedImport = (
 }
 
 // a `null` value means `key.charAt(0).toUpperCase() + key.slice(1)`
-const MemberExpressions = {
+const changedNames = {
   literal: null,
   uniqueSymbolFromSelf: null,
   enums: null,
@@ -361,6 +282,6 @@ const MemberExpressions = {
   sortedSet: null,
 }
 
-const isMemberExpression = (
+const isNameChanged = (
   key: string,
-): key is keyof typeof MemberExpressions => key in MemberExpressions
+): key is keyof typeof changedNames => key in changedNames
