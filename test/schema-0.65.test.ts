@@ -452,3 +452,15 @@ const message2 = ArrayFormatter.formatErrorSync(
 )`,
   )
 })
+
+describe("AST", () => {
+  expectTransformation(
+    "isTransform",
+    `import { AST, Schema } from "@effect/schema"
+
+const b = AST.isTransform(Schema.string.ast)`,
+    `import { AST, Schema } from "@effect/schema"
+
+const b = AST.isTransformation(Schema.String.ast)`,
+  )
+})

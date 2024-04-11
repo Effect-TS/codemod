@@ -22,11 +22,7 @@ export default function transformer(file: cs.FileInfo, api: cs.API) {
   if (schemaNamespace !== undefined) {
     // struct -> Struct, string -> String, etc...
     root
-      .find(j.MemberExpression, {
-        object: {
-          name: schemaNamespace,
-        },
-      })
+      .find(j.MemberExpression, { object: { name: schemaNamespace } })
       .forEach(path => {
         const expr = path.value
         const property = expr.property
@@ -195,11 +191,7 @@ export default function transformer(file: cs.FileInfo, api: cs.API) {
 
   const formatterChanges = (formatterNamespace: string) => {
     root
-      .find(j.MemberExpression, {
-        object: {
-          name: formatterNamespace,
-        },
-      })
+      .find(j.MemberExpression, { object: { name: formatterNamespace } })
       .forEach(path => {
         const expr = path.value
         const property = expr.property
@@ -228,6 +220,30 @@ export default function transformer(file: cs.FileInfo, api: cs.API) {
 
   if (arrayFormatterNamespace !== undefined) {
     formatterChanges(arrayFormatterNamespace)
+  }
+
+  const astNamespace = orElse(
+    findNamespaceImport(file, api, "@effect/schema/AST"),
+    () => findNamedImport(file, api, "@effect/schema", "AST"),
+  )
+
+  const astChanges = (astNamespace: string) => {
+    root
+      .find(j.MemberExpression, { object: { name: astNamespace } })
+      .forEach(path => {
+        const expr = path.value
+        const property = expr.property
+        if (property.type === "Identifier") {
+          const name = property.name
+          if (isASTNameChanged(name)) {
+            property.name = astChangedNames[name]
+          }
+        }
+      })
+  }
+
+  if (astNamespace !== undefined) {
+    astChanges(astNamespace)
   }
 
   return root.toSource()
@@ -365,3 +381,11 @@ const formatterChangedNames = {
 const isFormatterNameChanged = (
   key: string,
 ): key is keyof typeof formatterChangedNames => key in formatterChangedNames
+
+const astChangedNames = {
+  isTransform: "isTransformation",
+}
+
+const isASTNameChanged = (
+  key: string,
+): key is keyof typeof astChangedNames => key in astChangedNames
