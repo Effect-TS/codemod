@@ -480,3 +480,103 @@ const issue = new ParseResult.TupleType(new AST.TupleType([], [], true), null, [
 ])`,
   )
 })
+
+describe.only("change arguments", () => {
+  expectTransformation(
+    "EitheFromSelf",
+    `import { Schema } from "@effect/schema"
+
+const schema = Schema.eitherFromSelf({
+  right: Schema.number,
+  left: Schema.string,
+})`,
+    `import { Schema } from "@effect/schema"
+
+const schema = Schema.EitherFromSelf({
+  Right: Schema.Number,
+  Left: Schema.String,
+})`,
+  )
+
+  expectTransformation(
+    "Either",
+    `import { Schema } from "@effect/schema"
+
+const schema = Schema.either({
+  right: Schema.number,
+  left: Schema.string,
+})`,
+    `import { Schema } from "@effect/schema"
+
+const schema = Schema.Either({
+  Right: Schema.Number,
+  Left: Schema.String,
+})`,
+  )
+
+  expectTransformation(
+    "EitherFromUnion",
+    `import { Schema } from "@effect/schema"
+
+const schema = Schema.eitherFromUnion({
+  right: Schema.number,
+  left: Schema.string,
+})`,
+    `import { Schema } from "@effect/schema"
+
+const schema = Schema.EitherFromUnion({
+  Right: Schema.Number,
+  Left: Schema.String,
+})`,
+  )
+
+  expectTransformation(
+    "ReadonlyMapFromSelf",
+    `import { Schema } from "@effect/schema"
+
+const schema = Schema.readonlyMapFromSelf({
+  value: Schema.number,
+  key: Schema.string,
+})`,
+    `import { Schema } from "@effect/schema"
+
+const schema = Schema.ReadonlyMapFromSelf({
+  Value: Schema.Number,
+  Key: Schema.String,
+})`,
+  )
+
+  expectTransformation(
+    "ExitFromSelf",
+    `import { Schema } from "@effect/schema"
+
+const schema = Schema.exitFromSelf({
+  success: Schema.number,
+  failure: Schema.string,
+})`,
+    `import { Schema } from "@effect/schema"
+
+const schema = Schema.ExitFromSelf({
+  Success: Schema.Number,
+  Failure: Schema.String,
+})`,
+  )
+
+  expectTransformation(
+    "ExitFromSelf (with defect)",
+    `import { Schema } from "@effect/schema"
+
+const schema = Schema.exitFromSelf({
+  success: Schema.number,
+  failure: Schema.string,
+  defect: Schema.unknown
+})`,
+    `import { Schema } from "@effect/schema"
+
+const schema = Schema.ExitFromSelf({
+  Success: Schema.Number,
+  Failure: Schema.String,
+  Defect: Schema.Unknown
+})`,
+  )
+})
