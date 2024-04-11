@@ -19,6 +19,14 @@ const expectTransformation = (
 
 describe("imports", () => {
   expectTransformation(
+    "no imports",
+    `import { ParseResult } from "@effect/schema"
+const f = ParseResult.parseError`,
+    `import { ParseResult } from "@effect/schema"
+const f = ParseResult.parseError`,
+  )
+
+  expectTransformation(
     "named import",
     `import { Schema } from "@effect/schema"
 const schema = Schema.string`,
@@ -79,7 +87,7 @@ const schema = S.Array({})`,
   )
 })
 
-describe("transform", () => {
+describe("Schema.transform", () => {
   expectTransformation(
     "transform",
     `import { Schema } from "@effect/schema"
@@ -155,7 +163,7 @@ const schema = Schema.String.pipe(Schema.transform(Schema.Number, {
   )
 })
 
-describe("transformOrFail", () => {
+describe("Schema.transformOrFail", () => {
   expectTransformation(
     "transformOrFail",
     `import { ParseResult, Schema } from "@effect/schema"
@@ -231,7 +239,7 @@ const schema = Schema.String.pipe(Schema.transformOrFail(Schema.Number, {
   )
 })
 
-describe("declare", () => {
+describe("Schema.declare", () => {
   expectTransformation(
     "declare",
     `import { ParseResult, Schema } from "@effect/schema"
@@ -262,7 +270,7 @@ export const schema2 = <Value extends Schema.Schema.Any>(
   )
 })
 
-describe("optionalToRequired", () => {
+describe("Schema.optionalToRequired", () => {
   expectTransformation(
     "optionalToRequired",
     `import { Schema } from "@effect/schema"
@@ -291,7 +299,7 @@ const schema = Schema.optionalToRequired(Schema.Nullable(Schema.String), Schema.
   )
 })
 
-describe("optionalToOptional", () => {
+describe("Schema.optionalToOptional", () => {
   expectTransformation(
     "optionalToOptional",
     `import { Schema } from "@effect/schema"
@@ -350,5 +358,97 @@ class C extends A.transformOrFailFrom<C>("C")({ b: Schema.Number }, {
   decode: () => ParseResult.succeed({ a: "a", b: 1 }),
   encode: () => ParseResult.succeed({ a: "a" })
 }) {}`,
+  )
+})
+
+describe("TreeFormatter", () => {
+  expectTransformation(
+    "formatIssue / formatIssueEffect",
+    `import { ParseResult, Schema, TreeFormatter } from "@effect/schema"
+
+const message1 = TreeFormatter.formatIssueEffect(
+  new ParseResult.Type(Schema.string.ast, null),
+)
+
+const message2 = TreeFormatter.formatIssue(
+  new ParseResult.Type(Schema.string.ast, null),
+)`,
+    `import { ParseResult, Schema, TreeFormatter } from "@effect/schema"
+
+const message1 = TreeFormatter.formatIssue(
+  new ParseResult.Type(Schema.String.ast, null),
+)
+
+const message2 = TreeFormatter.formatIssueSync(
+  new ParseResult.Type(Schema.String.ast, null),
+)`,
+  )
+
+  expectTransformation(
+    "formatError / formatErrorEffect",
+    `import { ParseResult, Schema, TreeFormatter } from "@effect/schema"
+
+const message1 = TreeFormatter.formatErrorEffect(
+  ParseResult.parseError(new ParseResult.Type(Schema.string.ast, null)),
+)
+
+const message2 = TreeFormatter.formatError(
+  ParseResult.parseError(new ParseResult.Type(Schema.string.ast, null)),
+)`,
+    `import { ParseResult, Schema, TreeFormatter } from "@effect/schema"
+
+const message1 = TreeFormatter.formatError(
+  ParseResult.parseError(new ParseResult.Type(Schema.String.ast, null)),
+)
+
+const message2 = TreeFormatter.formatErrorSync(
+  ParseResult.parseError(new ParseResult.Type(Schema.String.ast, null)),
+)`,
+  )
+})
+
+describe("ArrayFormatter", () => {
+  expectTransformation(
+    "formatIssue / formatIssueEffect",
+    `import { ParseResult, Schema, ArrayFormatter } from "@effect/schema"
+
+const message1 = ArrayFormatter.formatIssueEffect(
+  new ParseResult.Type(Schema.string.ast, null),
+)
+
+const message2 = ArrayFormatter.formatIssue(
+  new ParseResult.Type(Schema.string.ast, null),
+)`,
+    `import { ParseResult, Schema, ArrayFormatter } from "@effect/schema"
+
+const message1 = ArrayFormatter.formatIssue(
+  new ParseResult.Type(Schema.String.ast, null),
+)
+
+const message2 = ArrayFormatter.formatIssueSync(
+  new ParseResult.Type(Schema.String.ast, null),
+)`,
+  )
+
+  expectTransformation(
+    "formatError / formatErrorEffect",
+    `import { ParseResult, Schema, ArrayFormatter } from "@effect/schema"
+
+const message1 = ArrayFormatter.formatErrorEffect(
+  ParseResult.parseError(new ParseResult.Type(Schema.string.ast, null)),
+)
+
+const message2 = ArrayFormatter.formatError(
+  ParseResult.parseError(new ParseResult.Type(Schema.string.ast, null)),
+)`,
+    `import { ParseResult, Schema, ArrayFormatter } from "@effect/schema"
+
+const message1 = ArrayFormatter.formatError(
+  ParseResult.parseError(new ParseResult.Type(Schema.String.ast, null)),
+)
+
+const message2 = ArrayFormatter.formatErrorSync(
+  ParseResult.parseError(new ParseResult.Type(Schema.String.ast, null)),
+)`,
   )
 })

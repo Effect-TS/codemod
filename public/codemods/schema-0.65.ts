@@ -12,109 +12,124 @@ type ASTPath<N> = NodePath<N, N>
 export default function transformer(file: cs.FileInfo, api: cs.API) {
   const j = api.jscodeshift
 
-  const namespace = orElse(
+  const root = j(file.source)
+
+  const schemaNamespace = orElse(
     findNamespaceImport(file, api, "@effect/schema/Schema"),
     () => findNamedImport(file, api, "@effect/schema", "Schema"),
   )
-  if (namespace === undefined) {
-    return file.source
-  }
 
-  const root = j(file.source)
+  if (schemaNamespace !== undefined) {
+    // struct -> Struct, string -> String, etc...
+    root
+      .find(j.MemberExpression, {
+        object: {
+          name: schemaNamespace,
+        },
+      })
+      .forEach(path => {
+        const expr = path.value
+        const property = expr.property
+        if (property.type === "Identifier") {
+          const name = property.name
+          // handle API with /bigint/ig
+          if (/bigint/ig.test(name)) {
+            property.name = property.name.replace(/bigint/ig, "BigInt")
+          } else if (isSchemaNameChanged(name)) {
+            const value: string | null = schemaChangedNames[name]
+            property.name = value === null
+              ? name.charAt(0).toUpperCase() + name.slice(1)
+              : value
+          }
+        }
+      })
 
-  // struct -> Struct, string -> String, etc...
-  root
-    .find(j.MemberExpression, {
-      object: {
-        name: namespace,
-      },
-    })
-    .forEach(path => {
-      const expr = path.value
-      const property = expr.property
-      if (property.type === "Identifier") {
-        const name = property.name
-        // handle API with /bigint/ig
-        if (/bigint/ig.test(name)) {
-          property.name = property.name.replace(/bigint/ig, "BigInt")
-        } else if (isNameChanged(name)) {
-          const value: string | null = changedNames[name]
-          property.name = value === null
-            ? name.charAt(0).toUpperCase() + name.slice(1)
-            : value
+    const getDecodeEncodeOptions = (
+      decode: ExpressionKind,
+      encode: ExpressionKind,
+      strictFalse: boolean = false,
+    ) => {
+      const properties = [
+        j.objectProperty(j.identifier("decode"), decode),
+        j.objectProperty(j.identifier("encode"), encode),
+      ]
+      if (strictFalse) {
+        properties.unshift(j.objectProperty(
+          j.identifier("strict"),
+          j.booleanLiteral(false),
+        ))
+      }
+      return j.objectExpression(properties)
+    }
+
+    const replaceTransformAndTransformOfFailFunctions = (
+      path: ASTPath<namedTypes.CallExpression>,
+    ) => {
+      const args = path.value.arguments
+      const hasStrictFalse = args[args.length - 1].type === "ObjectExpression"
+      if (hasStrictFalse) {
+        if (args.length === 5) {
+          const decode = args[2]
+          const encode = args[3]
+          if (
+            decode.type !== "SpreadElement"
+            && encode.type !== "SpreadElement"
+          ) {
+            args.splice(2, 3, getDecodeEncodeOptions(decode, encode, true))
+          }
+        } else if (args.length === 4) {
+          const decode = args[1]
+          const encode = args[2]
+          if (
+            decode.type !== "SpreadElement"
+            && encode.type !== "SpreadElement"
+          ) {
+            args.splice(1, 3, getDecodeEncodeOptions(decode, encode, true))
+          }
+        }
+      } else {
+        if (args.length === 4) {
+          const decode = args[2]
+          const encode = args[3]
+          if (
+            decode.type !== "SpreadElement"
+            && encode.type !== "SpreadElement"
+          ) {
+            args.splice(2, 2, getDecodeEncodeOptions(decode, encode))
+          }
+        } else if (args.length === 3) {
+          const decode = args[1]
+          const encode = args[2]
+          if (
+            decode.type !== "SpreadElement"
+            && encode.type !== "SpreadElement"
+          ) {
+            args.splice(1, 2, getDecodeEncodeOptions(decode, encode))
+          }
         }
       }
-    })
-
-  const getDecodeEncodeOptions = (
-    decode: ExpressionKind,
-    encode: ExpressionKind,
-    strictFalse: boolean = false,
-  ) => {
-    const properties = [
-      j.objectProperty(j.identifier("decode"), decode),
-      j.objectProperty(j.identifier("encode"), encode),
-    ]
-    if (strictFalse) {
-      properties.unshift(j.objectProperty(
-        j.identifier("strict"),
-        j.booleanLiteral(false),
-      ))
     }
-    return j.objectExpression(properties)
-  }
 
-  const find = (
-    name: string,
-    f: (
-      path: ASTPath<namedTypes.CallExpression>,
-    ) => void,
-  ) =>
-    root
-      .find(j.CallExpression, {
+    const find = (
+      name: string,
+      f: (
+        path: ASTPath<namedTypes.CallExpression>,
+      ) => void,
+    ) =>
+      root.find(j.CallExpression, {
         callee: {
           type: "MemberExpression",
-          object: { name: namespace },
+          object: { name: schemaNamespace },
           property: { name },
         },
       }).forEach(f)
 
-  const replaceTransformAndTransformOfFailFunctions = (
-    path: ASTPath<namedTypes.CallExpression>,
-  ) => {
-    const args = path.value.arguments
-    const hasStrictFalse = args[args.length - 1].type === "ObjectExpression"
-    if (hasStrictFalse) {
-      if (args.length === 5) {
-        const decode = args[2]
-        const encode = args[3]
-        if (
-          decode.type !== "SpreadElement"
-          && encode.type !== "SpreadElement"
-        ) {
-          args.splice(2, 3, getDecodeEncodeOptions(decode, encode, true))
-        }
-      } else if (args.length === 4) {
-        const decode = args[1]
-        const encode = args[2]
-        if (
-          decode.type !== "SpreadElement"
-          && encode.type !== "SpreadElement"
-        ) {
-          args.splice(1, 3, getDecodeEncodeOptions(decode, encode, true))
-        }
-      }
-    } else {
-      if (args.length === 4) {
-        const decode = args[2]
-        const encode = args[3]
-        if (
-          decode.type !== "SpreadElement"
-          && encode.type !== "SpreadElement"
-        ) {
-          args.splice(2, 2, getDecodeEncodeOptions(decode, encode))
-        }
-      } else if (args.length === 3) {
+    find("transform", replaceTransformAndTransformOfFailFunctions)
+    find("transformOrFail", replaceTransformAndTransformOfFailFunctions)
+
+    find("Declare", path => {
+      const args = path.value.arguments
+      if (args.length >= 3) {
         const decode = args[1]
         const encode = args[2]
         if (
@@ -124,67 +139,50 @@ export default function transformer(file: cs.FileInfo, api: cs.API) {
           args.splice(1, 2, getDecodeEncodeOptions(decode, encode))
         }
       }
-    }
-  }
+    })
 
-  find("transform", replaceTransformAndTransformOfFailFunctions)
-  find("transformOrFail", replaceTransformAndTransformOfFailFunctions)
-
-  find("Declare", path => {
-    const args = path.value.arguments
-    if (args.length >= 3) {
-      const decode = args[1]
-      const encode = args[2]
+    const replaceOptionalToFunctions = (
+      path: ASTPath<namedTypes.CallExpression>,
+    ) => {
+      const args = path.value.arguments
+      const decode = args[2]
+      const encode = args[3]
       if (
         decode.type !== "SpreadElement"
         && encode.type !== "SpreadElement"
       ) {
-        args.splice(1, 2, getDecodeEncodeOptions(decode, encode))
+        args.splice(2, 2, getDecodeEncodeOptions(decode, encode))
       }
     }
-  })
 
-  const replaceOptionalToFunctions = (
-    path: ASTPath<namedTypes.CallExpression>,
-  ) => {
-    const args = path.value.arguments
-    const decode = args[2]
-    const encode = args[3]
-    if (
-      decode.type !== "SpreadElement"
-      && encode.type !== "SpreadElement"
-    ) {
-      args.splice(2, 2, getDecodeEncodeOptions(decode, encode))
-    }
-  }
+    find("optionalToRequired", replaceOptionalToFunctions)
+    find("optionalToOptional", replaceOptionalToFunctions)
 
-  find("optionalToRequired", replaceOptionalToFunctions)
-  find("optionalToOptional", replaceOptionalToFunctions)
-
-  // Class.transformOrFail / Class.transformOrFrom
-  root.find(j.ClassDeclaration).forEach(classDeclaration => {
-    const superClass = classDeclaration.node.superClass
-    if (superClass) {
-      if (superClass.type === "CallExpression") {
-        const callee = superClass.callee
-        if (callee.type === "CallExpression") {
-          if (callee.callee.type === "MemberExpression") {
-            const property = callee.callee.property
-            if (property.type === "Identifier") {
-              if (
-                property.name === "transformOrFail"
-                || property.name === "transformOrFailFrom"
-              ) {
-                callee.type
-                const args = superClass.arguments
-                if (args.length === 3) {
-                  const decode = args[1]
-                  const encode = args[2]
-                  if (
-                    decode.type !== "SpreadElement"
-                    && encode.type !== "SpreadElement"
-                  ) {
-                    args.splice(1, 2, getDecodeEncodeOptions(decode, encode))
+    // Class.transformOrFail / Class.transformOrFrom
+    root.find(j.ClassDeclaration).forEach(classDeclaration => {
+      const superClass = classDeclaration.node.superClass
+      if (superClass) {
+        if (superClass.type === "CallExpression") {
+          const callee = superClass.callee
+          if (callee.type === "CallExpression") {
+            if (callee.callee.type === "MemberExpression") {
+              const property = callee.callee.property
+              if (property.type === "Identifier") {
+                if (
+                  property.name === "transformOrFail"
+                  || property.name === "transformOrFailFrom"
+                ) {
+                  callee.type
+                  const args = superClass.arguments
+                  if (args.length === 3) {
+                    const decode = args[1]
+                    const encode = args[2]
+                    if (
+                      decode.type !== "SpreadElement"
+                      && encode.type !== "SpreadElement"
+                    ) {
+                      args.splice(1, 2, getDecodeEncodeOptions(decode, encode))
+                    }
                   }
                 }
               }
@@ -192,8 +190,45 @@ export default function transformer(file: cs.FileInfo, api: cs.API) {
           }
         }
       }
-    }
-  })
+    })
+  }
+
+  const formatterChanges = (formatterNamespace: string) => {
+    root
+      .find(j.MemberExpression, {
+        object: {
+          name: formatterNamespace,
+        },
+      })
+      .forEach(path => {
+        const expr = path.value
+        const property = expr.property
+        if (property.type === "Identifier") {
+          const name = property.name
+          if (isFormatterNameChanged(name)) {
+            property.name = formatterChangedNames[name]
+          }
+        }
+      })
+  }
+
+  const treeFormatterNamespace = orElse(
+    findNamespaceImport(file, api, "@effect/schema/TreeFormatter"),
+    () => findNamedImport(file, api, "@effect/schema", "TreeFormatter"),
+  )
+
+  if (treeFormatterNamespace !== undefined) {
+    formatterChanges(treeFormatterNamespace)
+  }
+
+  const arrayFormatterNamespace = orElse(
+    findNamespaceImport(file, api, "@effect/schema/ArrayFormatter"),
+    () => findNamedImport(file, api, "@effect/schema", "ArrayFormatter"),
+  )
+
+  if (arrayFormatterNamespace !== undefined) {
+    formatterChanges(arrayFormatterNamespace)
+  }
 
   return root.toSource()
 }
@@ -250,7 +285,7 @@ const findNamedImport = (
 }
 
 // a `null` value means `key.charAt(0).toUpperCase() + key.slice(1)`
-const changedNames = {
+const schemaChangedNames = {
   literal: null,
   uniqueSymbolFromSelf: null,
   enums: null,
@@ -316,6 +351,17 @@ const changedNames = {
   sortedSet: null,
 }
 
-const isNameChanged = (
+const isSchemaNameChanged = (
   key: string,
-): key is keyof typeof changedNames => key in changedNames
+): key is keyof typeof schemaChangedNames => key in schemaChangedNames
+
+const formatterChangedNames = {
+  formatIssue: "formatIssueSync",
+  formatError: "formatErrorSync",
+  formatIssueEffect: "formatIssue",
+  formatErrorEffect: "formatError",
+}
+
+const isFormatterNameChanged = (
+  key: string,
+): key is keyof typeof formatterChangedNames => key in formatterChangedNames
