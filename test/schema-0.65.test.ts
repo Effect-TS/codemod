@@ -262,6 +262,59 @@ export const schema2 = <Value extends Schema.Schema.Any>(
   )
 })
 
+describe("optionalToRequired", () => {
+  expectTransformation(
+    "optionalToRequired",
+    `import { Schema } from "@effect/schema"
+import * as Option from "effect/Option"
+
+const schema = Schema.optionalToRequired(
+  Schema.nullable(Schema.string),
+  Schema.string,
+  Option.match({
+    onNone: () => "",
+    onSome: a => a === null ? "" : a,
+  }),
+  Option.some,
+)`,
+    `import { Schema } from "@effect/schema"
+import * as Option from "effect/Option"
+
+const schema = Schema.optionalToRequired(Schema.Nullable(Schema.String), Schema.String, {
+  decode: Option.match({
+    onNone: () => "",
+    onSome: a => a === null ? "" : a,
+  }),
+
+  encode: Option.some
+})`,
+  )
+})
+
+describe("optionalToOptional", () => {
+  expectTransformation(
+    "optionalToOptional",
+    `import { Schema } from "@effect/schema"
+import * as Option from "effect/Option"
+import * as Predicate from "effect/Predicate"
+
+const schema = Schema.optionalToOptional(
+  Schema.nullable(Schema.string),
+  Schema.string,
+  Option.filter(Predicate.isNotNull),
+  a => a,
+)`,
+    `import { Schema } from "@effect/schema"
+import * as Option from "effect/Option"
+import * as Predicate from "effect/Predicate"
+
+const schema = Schema.optionalToOptional(Schema.Nullable(Schema.String), Schema.String, {
+  decode: Option.filter(Predicate.isNotNull),
+  encode: a => a
+})`,
+  )
+})
+
 describe.skip("Class.transformOrFail*", () => {
   expectTransformation(
     "Class.transformOrFail*",

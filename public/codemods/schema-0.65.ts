@@ -183,6 +183,66 @@ export default function transformer(file: cs.FileInfo, api: cs.API) {
       }
     })
 
+  // optionalToRequired
+  root
+    .find(j.CallExpression, {
+      callee: {
+        type: "MemberExpression",
+        object: { name: namespaceName },
+        property: { name: "optionalToRequired" },
+      },
+    })
+    .forEach((
+      path: ASTPath<namedTypes.CallExpression>,
+    ) => {
+      const args = path.value.arguments
+      const decodeFn = args[2]
+      const encodeFn = args[3]
+      if (
+        decodeFn.type !== "SpreadElement"
+        && encodeFn.type !== "SpreadElement"
+      ) {
+        args.splice(
+          2,
+          2,
+          j.objectExpression([
+            j.objectProperty(j.identifier("decode"), decodeFn),
+            j.objectProperty(j.identifier("encode"), encodeFn),
+          ]),
+        )
+      }
+    })
+
+  // optionalToOptional
+  root
+    .find(j.CallExpression, {
+      callee: {
+        type: "MemberExpression",
+        object: { name: namespaceName },
+        property: { name: "optionalToOptional" },
+      },
+    })
+    .forEach((
+      path: ASTPath<namedTypes.CallExpression>,
+    ) => {
+      const args = path.value.arguments
+      const decodeFn = args[2]
+      const encodeFn = args[3]
+      if (
+        decodeFn.type !== "SpreadElement"
+        && encodeFn.type !== "SpreadElement"
+      ) {
+        args.splice(
+          2,
+          2,
+          j.objectExpression([
+            j.objectProperty(j.identifier("decode"), decodeFn),
+            j.objectProperty(j.identifier("encode"), encodeFn),
+          ]),
+        )
+      }
+    })
+
   return root.toSource()
 }
 
