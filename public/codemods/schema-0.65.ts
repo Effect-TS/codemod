@@ -32,7 +32,10 @@ export default function transformer(file: cs.FileInfo, api: cs.API) {
           const property = expr.property
           if (property.type === "Identifier") {
             const key = property.name
-            if (isMemberExpression(key)) {
+            // handle API with /bigint/ig
+            if (/bigint/ig.test(key)) {
+              property.name = property.name.replace(/bigint/ig, "BigInt")
+            } else if (isMemberExpression(key)) {
               const value: string | null = MemberExpressions[key]
               property.name = value === null
                 ? key.charAt(0).toUpperCase() + key.slice(1)
@@ -201,10 +204,36 @@ const findNamedImport = (
 
 // a `null` value means `key.charAt(0).toUpperCase() + key.slice(1)`
 const MemberExpressions = {
+  literal: null,
+  uniqueSymbolFromSelf: null,
+  enums: null,
+  templateLiteral: null,
+  declare: null,
+  instanceOf: null,
+  undefined: null,
+  void: null,
+  null: null,
+  never: null,
+  unknown: null,
+  any: null,
   string: null,
   number: null,
-  struct: null,
+  boolean: null,
+  symbolFromSelf: null,
+  object: null,
+  union: null,
+  nullable: null,
+  orUndefined: null,
+  nullish: null,
+  keyof: null,
+  optionalElement: null,
+  tuple: null,
   array: null,
+  nonEmptyArray: null,
+  struct: null,
+  record: null,
+  suspend: null,
+  symbol: null,
 }
 
 const isMemberExpression = (

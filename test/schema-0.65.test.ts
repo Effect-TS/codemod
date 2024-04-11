@@ -53,6 +53,16 @@ const schema = S.String`,
   )
 
   expectTransformation(
+    "APIs with /bigint/ig",
+    `import * as S from "@effect/schema/Schema"
+const schema1 = S.bigintFromSelf
+const schema2 = S.NonNegativeBigintFromSelf`,
+    `import * as S from "@effect/schema/Schema"
+const schema1 = S.BigIntFromSelf
+const schema2 = S.NonNegativeBigIntFromSelf`,
+  )
+
+  expectTransformation(
     "struct",
     `import * as S from "@effect/schema/Schema"
 const schema = S.struct({})`,
