@@ -464,3 +464,19 @@ const b = AST.isTransform(Schema.string.ast)`,
 const b = AST.isTransformation(Schema.String.ast)`,
   )
 })
+
+describe("ParseResult", () => {
+  expectTransformation(
+    "Tuple",
+    `import { AST, ParseResult, Schema } from "@effect/schema"
+
+const issue = new ParseResult.Tuple(new AST.TupleType([], [], true), null, [
+  new ParseResult.Index(0, new ParseResult.Unexpected(Schema.string.ast)),
+])`,
+    `import { AST, ParseResult, Schema } from "@effect/schema"
+
+const issue = new ParseResult.TupleType(new AST.TupleType([], [], true), null, [
+  new ParseResult.Index(0, new ParseResult.Unexpected(Schema.String.ast)),
+])`,
+  )
+})

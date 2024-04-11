@@ -246,6 +246,30 @@ export default function transformer(file: cs.FileInfo, api: cs.API) {
     astChanges(astNamespace)
   }
 
+  const parseResultNamespace = orElse(
+    findNamespaceImport(file, api, "@effect/schema/ParseResult"),
+    () => findNamedImport(file, api, "@effect/schema", "ParseResult"),
+  )
+
+  const parseResultChanges = (parseResultNamespace: string) => {
+    root
+      .find(j.MemberExpression, { object: { name: parseResultNamespace } })
+      .forEach(path => {
+        const expr = path.value
+        const property = expr.property
+        if (property.type === "Identifier") {
+          const name = property.name
+          if (isParseResultNameChanged(name)) {
+            property.name = parseResultChangedNames[name]
+          }
+        }
+      })
+  }
+
+  if (parseResultNamespace !== undefined) {
+    parseResultChanges(parseResultNamespace)
+  }
+
   return root.toSource()
 }
 
@@ -389,3 +413,11 @@ const astChangedNames = {
 const isASTNameChanged = (
   key: string,
 ): key is keyof typeof astChangedNames => key in astChangedNames
+
+const parseResultChangedNames = {
+  Tuple: "TupleType",
+}
+
+const isParseResultNameChanged = (
+  key: string,
+): key is keyof typeof parseResultChangedNames => key in parseResultChangedNames
