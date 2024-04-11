@@ -151,6 +151,38 @@ export default function transformer(file: cs.FileInfo, api: cs.API) {
     })
     .forEach(replaceTransformFunctions)
 
+  // declare
+  root
+    .find(j.CallExpression, {
+      callee: {
+        type: "MemberExpression",
+        object: { name: namespaceName },
+        property: { name: "Declare" },
+      },
+    })
+    .forEach((
+      path: ASTPath<namedTypes.CallExpression>,
+    ) => {
+      const args = path.value.arguments
+      if (args.length >= 3) {
+        const decodeFn = args[1]
+        const encodeFn = args[2]
+        if (
+          decodeFn.type !== "SpreadElement"
+          && encodeFn.type !== "SpreadElement"
+        ) {
+          args.splice(
+            1,
+            2,
+            j.objectExpression([
+              j.objectProperty(j.identifier("decode"), decodeFn),
+              j.objectProperty(j.identifier("encode"), encodeFn),
+            ]),
+          )
+        }
+      }
+    })
+
   return root.toSource()
 }
 

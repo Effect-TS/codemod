@@ -9,7 +9,7 @@ const expectTransformation = (
   output: string,
 ) => {
   TestUtils.defineInlineTest(
-    transformer,
+    { default: transformer, parser: "ts" },
     {},
     input,
     output,
@@ -228,5 +228,80 @@ const schema = Schema.String.pipe(Schema.transformOrFail(Schema.Number, {
   decode: () => ParseResult.succeed(0),
   encode: () => ParseResult.succeed("")
 }))`,
+  )
+})
+
+describe("declare", () => {
+  expectTransformation(
+    "declare",
+    `import { ParseResult, Schema } from "@effect/schema"
+
+export const schema1 = Schema.declare((u): u is File => u instanceof File)
+
+export const schema2 = <Value extends Schema.Schema.Any>(
+  value: Value,
+) => {
+  return Schema.declare(
+    [value],
+    value => ParseResult.decodeUnknown(value),
+    value => ParseResult.encodeUnknown(value),
+  )
+}`,
+    `import { ParseResult, Schema } from "@effect/schema"
+
+export const schema1 = Schema.Declare((u): u is File => u instanceof File)
+
+export const schema2 = <Value extends Schema.Schema.Any>(
+  value: Value,
+) => {
+  return Schema.Declare([value], {
+    decode: value => ParseResult.decodeUnknown(value),
+    encode: value => ParseResult.encodeUnknown(value)
+  });
+}`,
+  )
+})
+
+describe.skip("Class.transformOrFail*", () => {
+  expectTransformation(
+    "Class.transformOrFail*",
+    `import { ParseResult, Schema } from "@effect/schema"
+
+class A extends Schema.Class<A>("A")({
+  a: Schema.string,
+}) {}
+
+class B extends A.transformOrFail<B>("B")(
+  { b: Schema.number },
+  () => ParseResult.succeed({ a: "a", b: 1 }),
+  () => ParseResult.succeed({ a: "a" }),
+) {}
+
+class C extends A.transformOrFailFrom<C>("C")(
+  { b: Schema.number },
+  () => ParseResult.succeed({ a: "a", b: 1 }),
+  () => ParseResult.succeed({ a: "a" }),
+) {}`,
+    `import { ParseResult, Schema } from "@effect/schema"
+
+class A extends Schema.Class<A>("A")({
+  a: Schema.String,
+}) {}
+
+class B extends A.transformOrFail<B>("B")(
+  { b: Schema.Number },
+  {
+    decode: () => ParseResult.succeed({ a: "a", b: 1 }),
+    encode: () => ParseResult.succeed({ a: "a" }),
+  }
+) {}
+
+class C extends A.transformOrFailFrom<C>("C")(
+  { b: Schema.Number },
+  {
+    decode: () => ParseResult.succeed({ a: "a", b: 1 }),
+    encode: () => ParseResult.succeed({ a: "a" }),
+  }
+) {}`,
   )
 })
