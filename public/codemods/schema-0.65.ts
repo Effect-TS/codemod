@@ -161,6 +161,40 @@ export default function transformer(file: cs.FileInfo, api: cs.API) {
   find("optionalToRequired", replaceOptionalToFunctions)
   find("optionalToOptional", replaceOptionalToFunctions)
 
+  // Class.transformOrFail / Class.transformOrFrom
+  root.find(j.ClassDeclaration).forEach(classDeclaration => {
+    const superClass = classDeclaration.node.superClass
+    if (superClass) {
+      if (superClass.type === "CallExpression") {
+        const callee = superClass.callee
+        if (callee.type === "CallExpression") {
+          if (callee.callee.type === "MemberExpression") {
+            const property = callee.callee.property
+            if (property.type === "Identifier") {
+              if (
+                property.name === "transformOrFail"
+                || property.name === "transformOrFailFrom"
+              ) {
+                callee.type
+                const args = superClass.arguments
+                if (args.length === 3) {
+                  const decode = args[1]
+                  const encode = args[2]
+                  if (
+                    decode.type !== "SpreadElement"
+                    && encode.type !== "SpreadElement"
+                  ) {
+                    args.splice(1, 2, getDecodeEncodeOptions(decode, encode))
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  })
+
   return root.toSource()
 }
 

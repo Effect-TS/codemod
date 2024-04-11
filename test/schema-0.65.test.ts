@@ -315,7 +315,7 @@ const schema = Schema.optionalToOptional(Schema.Nullable(Schema.String), Schema.
   )
 })
 
-describe.skip("Class.transformOrFail*", () => {
+describe("Class.transformOrFail*", () => {
   expectTransformation(
     "Class.transformOrFail*",
     `import { ParseResult, Schema } from "@effect/schema"
@@ -341,20 +341,14 @@ class A extends Schema.Class<A>("A")({
   a: Schema.String,
 }) {}
 
-class B extends A.transformOrFail<B>("B")(
-  { b: Schema.Number },
-  {
-    decode: () => ParseResult.succeed({ a: "a", b: 1 }),
-    encode: () => ParseResult.succeed({ a: "a" }),
-  }
-) {}
+class B extends A.transformOrFail<B>("B")({ b: Schema.Number }, {
+  decode: () => ParseResult.succeed({ a: "a", b: 1 }),
+  encode: () => ParseResult.succeed({ a: "a" })
+}) {}
 
-class C extends A.transformOrFailFrom<C>("C")(
-  { b: Schema.Number },
-  {
-    decode: () => ParseResult.succeed({ a: "a", b: 1 }),
-    encode: () => ParseResult.succeed({ a: "a" }),
-  }
-) {}`,
+class C extends A.transformOrFailFrom<C>("C")({ b: Schema.Number }, {
+  decode: () => ParseResult.succeed({ a: "a", b: 1 }),
+  encode: () => ParseResult.succeed({ a: "a" })
+}) {}`,
   )
 })
