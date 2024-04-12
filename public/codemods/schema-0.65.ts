@@ -456,6 +456,7 @@ const schemaChangedNames = {
   transformLiterals: null,
   attachPropertySignature: null,
   compose: null,
+  parseJson: null,
 }
 
 const isSchemaNameChanged = (
