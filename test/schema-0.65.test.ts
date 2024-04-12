@@ -288,7 +288,7 @@ const schema = Schema.optionalToRequired(
     `import { Schema } from "@effect/schema"
 import * as Option from "effect/Option"
 
-const schema = Schema.optionalToRequired(Schema.Nullable(Schema.String), Schema.String, {
+const schema = Schema.optionalToRequired(Schema.NullOr(Schema.String), Schema.String, {
   decode: Option.match({
     onNone: () => "",
     onSome: a => a === null ? "" : a,
@@ -316,7 +316,7 @@ const schema = Schema.optionalToOptional(
 import * as Option from "effect/Option"
 import * as Predicate from "effect/Predicate"
 
-const schema = Schema.optionalToOptional(Schema.Nullable(Schema.String), Schema.String, {
+const schema = Schema.optionalToOptional(Schema.NullOr(Schema.String), Schema.String, {
   decode: Option.filter(Predicate.isNotNull),
   encode: a => a
 })`,
@@ -481,7 +481,7 @@ const issue = new ParseResult.TupleType(new AST.TupleType([], [], true), null, [
   )
 })
 
-describe.only("change arguments", () => {
+describe("change arguments", () => {
   expectTransformation(
     "EitheFromSelf",
     `import { Schema } from "@effect/schema"
