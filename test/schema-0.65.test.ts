@@ -580,3 +580,31 @@ const schema = Schema.ExitFromSelf({
 })`,
   )
 })
+
+describe("Arbitrary", () => {
+  expectTransformation(
+    "make -> makeLazy",
+    `import { Arbitrary, Schema } from "@effect/schema"
+
+const Person = Schema.struct({
+  name: Schema.string,
+  age: Schema.string.pipe(
+    Schema.compose(Schema.NumberFromString),
+    Schema.int(),
+  ),
+})
+
+const arb = Arbitrary.make(Person)`,
+    `import { Arbitrary, Schema } from "@effect/schema"
+
+const Person = Schema.Struct({
+  name: Schema.String,
+  age: Schema.String.pipe(
+    Schema.Compose(Schema.NumberFromString),
+    Schema.int(),
+  ),
+})
+
+const arb = Arbitrary.makeLazy(Person)`,
+  )
+})

@@ -320,6 +320,30 @@ export default function transformer(file: cs.FileInfo, api: cs.API) {
     parseResultChanges(parseResultNamespace)
   }
 
+  const arbitraryNamespace = orElse(
+    findNamespaceImport(file, api, "@effect/schema/Arbitrary"),
+    () => findNamedImport(file, api, "@effect/schema", "Arbitrary"),
+  )
+
+  const arbitraryChanges = (parseResultNamespace: string) => {
+    root
+      .find(j.MemberExpression, { object: { name: parseResultNamespace } })
+      .forEach(path => {
+        const expr = path.value
+        const property = expr.property
+        if (property.type === "Identifier") {
+          const name = property.name
+          if (isArbitraryNameChanged(name)) {
+            property.name = arbitraryChangedNames[name]
+          }
+        }
+      })
+  }
+
+  if (arbitraryNamespace !== undefined) {
+    arbitraryChanges(arbitraryNamespace)
+  }
+
   return root.toSource()
 }
 
@@ -489,3 +513,11 @@ const parseResultChangedNames = {
 const isParseResultNameChanged = (
   key: string,
 ): key is keyof typeof parseResultChangedNames => key in parseResultChangedNames
+
+const arbitraryChangedNames = {
+  make: "makeLazy",
+}
+
+const isArbitraryNameChanged = (
+  key: string,
+): key is keyof typeof arbitraryChangedNames => key in arbitraryChangedNames
