@@ -173,7 +173,7 @@ export default function transformer(file: cs.FileInfo, api: cs.API) {
     find("transform", replaceTransformAndTransformOfFailFunctions)
     find("transformOrFail", replaceTransformAndTransformOfFailFunctions)
 
-    find("Declare", path => {
+    find("declare", path => {
       const args = path.value.arguments
       if (args.length >= 3) {
         const decode = args[1]
@@ -400,12 +400,7 @@ const findNamedImport = (
 
 // a `null` value means `key.charAt(0).toUpperCase() + key.slice(1)`
 const schemaChangedNames = {
-  literal: null,
   uniqueSymbolFromSelf: null,
-  enums: null,
-  templateLiteral: null,
-  declare: null,
-  instanceOf: null,
   undefined: null,
   void: null,
   null: null,
@@ -421,13 +416,11 @@ const schemaChangedNames = {
   nullable: "NullOr",
   orUndefined: "UndefinedOr",
   nullish: "NullishOr",
-  keyof: "KeyOf",
   tuple: null,
   array: null,
   nonEmptyArray: null,
   struct: null,
   record: null,
-  suspend: null,
   symbol: null,
   optionFromSelf: null,
   option: null,
@@ -462,25 +455,6 @@ const schemaChangedNames = {
   list: null,
   sortedSetFromSelf: null,
   sortedSet: null,
-  getNumberIndexedAccess: "NumberIndexedAccess",
-  head: null,
-  headOrElse: null,
-  pluck: null,
-  pick: null,
-  omit: null,
-  encodedSchema: null,
-  typeSchema: null,
-  pickLiteral: null,
-  fromBrand: null,
-  partial: null,
-  required: null,
-  mutable: null,
-  split: null,
-  transformLiteral: null,
-  transformLiterals: null,
-  attachPropertySignature: null,
-  compose: null,
-  parseJson: null,
 }
 
 const isSchemaNameChanged = (

@@ -257,12 +257,12 @@ export const schema2 = <Value extends Schema.Schema.Any>(
 }`,
     `import { ParseResult, Schema } from "@effect/schema"
 
-export const schema1 = Schema.Declare((u): u is File => u instanceof File)
+export const schema1 = Schema.declare((u): u is File => u instanceof File)
 
 export const schema2 = <Value extends Schema.Schema.Any>(
   value: Value,
 ) => {
-  return Schema.Declare([value], {
+  return Schema.declare([value], {
     decode: value => ParseResult.decodeUnknown(value),
     encode: value => ParseResult.encodeUnknown(value)
   });
@@ -600,7 +600,7 @@ const arb = Arbitrary.make(Person)`,
 const Person = Schema.Struct({
   name: Schema.String,
   age: Schema.String.pipe(
-    Schema.Compose(Schema.NumberFromString),
+    Schema.compose(Schema.NumberFromString),
     Schema.int(),
   ),
 })
