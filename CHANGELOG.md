@@ -1,5 +1,14 @@
 # @effect/codemod
 
+## 0.0.9
+
+### Patch Changes
+
+- [#23](https://github.com/Effect-TS/codemod/pull/23) [`88e32c0`](https://github.com/Effect-TS/codemod/commit/88e32c021af90815388ea32e00887e337fe2e5f2) Thanks [@gcanti](https://github.com/gcanti)! - update schema-0.65 codemod:
+
+  - handle type-level Schema changes
+  - handle LazyArbitrary type
+
 ## 0.0.8
 
 ### Patch Changes
