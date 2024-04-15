@@ -608,3 +608,35 @@ const Person = Schema.Struct({
 const arb = Arbitrary.makeLazy(Person)`,
   )
 })
+
+describe("type-level", () => {
+  expectTransformation(
+    "S.struct<>",
+    `import type * as S from "@effect/schema/Schema"
+
+export function struct<Fields extends S.Struct.Fields>(
+  fields: Fields,
+): S.struct<Fields>
+export function struct<Fields extends S.Struct.Fields>(
+  fields: Fields,
+): S.struct<Fields> {}`,
+    `import type * as S from "@effect/schema/Schema"
+
+export function struct<Fields extends S.Struct.Fields>(
+  fields: Fields,
+): S.Struct<Fields>
+export function struct<Fields extends S.Struct.Fields>(
+  fields: Fields,
+): S.Struct<Fields> {}`,
+  )
+
+  expectTransformation(
+    "null",
+    `import type * as S from "@effect/schema/Schema"
+
+type N = S.$null`,
+    `import type * as S from "@effect/schema/Schema"
+
+type N = S.Null`,
+  )
+})

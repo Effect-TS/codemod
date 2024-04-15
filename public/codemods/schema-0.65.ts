@@ -40,6 +40,29 @@ export default function transformer(file: cs.FileInfo, api: cs.API) {
         }
       })
 
+    root
+      .find(j.TSTypeReference, {
+        typeName: { left: { name: schemaNamespace } },
+      })
+      .forEach(path => {
+        const expr = path.value
+        const typeName = expr.typeName
+        if (typeName.type === "TSQualifiedName") {
+          const right = typeName.right
+          if (right.type === "Identifier") {
+            const name = right.name
+            if (/bigint/ig.test(name)) {
+              right.name = right.name.replace(/bigint/ig, "BigInt")
+            } else if (isTypeLevelSchemaNameChanged(name)) {
+              const value: string | null = typeLevelSchemaChangedNames[name]
+              right.name = value === null
+                ? name.charAt(0).toUpperCase() + name.slice(1)
+                : value
+            }
+          }
+        }
+      })
+
     // const changeArguments = (
     //   api: string,
     //   changes: Record<string, string>,
@@ -463,6 +486,69 @@ const schemaChangedNames = {
 const isSchemaNameChanged = (
   key: string,
 ): key is keyof typeof schemaChangedNames => key in schemaChangedNames
+
+const typeLevelSchemaChangedNames = {
+  literal: null,
+  enums: null,
+  $void: "Void",
+  $undefined: "Undefined",
+  $null: "Null",
+  never: null,
+  $unknown: "Unknown",
+  $any: "Any",
+  $string: "$String",
+  $number: "$Number",
+  $boolean: "$Boolean",
+  symbolFromSelf: null,
+  $object: "$Object",
+  union: null,
+  nullable: "NullOr",
+  orUndefined: "UndefinedOr",
+  nullish: "NullishOr",
+  tupleType: null,
+  tuple: null,
+  array: "$Array",
+  nonEmptyArray: null,
+  typeLiteral: null,
+  struct: null,
+  record: "$Record",
+  $symbol: "$Symbol",
+  optionFromSelf: null,
+  option: null,
+  optionFromNullable: "OptionFromNullOr",
+  optionFromNullish: "OptionFromNullishOr",
+  optionFromOrUndefined: "OptionFromUndefinedOr",
+  eitherFromSelf: null,
+  either: null,
+  eitherFromUnion: null,
+  readonlyMapFromSelf: null,
+  mapFromSelf: null,
+  readonlyMap: "$ReadonlyMap",
+  map: "$Map",
+  readonlySetFromSelf: null,
+  setFromSelf: null,
+  readonlySet: "$ReadonlySet",
+  set: "$Set",
+  chunkFromSelf: null,
+  chunk: null,
+  causeFromSelf: null,
+  cause: null,
+  exitFromSelf: null,
+  exit: null,
+  hashSetFromSelf: null,
+  hashSet: null,
+  hashMapFromSelf: null,
+  hashMap: null,
+  listFromSelf: null,
+  list: null,
+  sortedSetFromSelf: null,
+  sortedSet: null,
+}
+
+const isTypeLevelSchemaNameChanged = (
+  key: string,
+): key is keyof typeof typeLevelSchemaChangedNames =>
+  key in typeLevelSchemaChangedNames
 
 const formatterChangedNames = {
   formatIssue: "formatIssueSync",
