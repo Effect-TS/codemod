@@ -40,6 +40,29 @@ export default function transformer(file: cs.FileInfo, api: cs.API) {
         }
       })
 
+    root
+      .find(j.TSTypeReference, {
+        typeName: { left: { name: schemaNamespace } },
+      })
+      .forEach(path => {
+        const expr = path.value
+        const typeName = expr.typeName
+        if (typeName.type === "TSQualifiedName") {
+          const right = typeName.right
+          if (right.type === "Identifier") {
+            const name = right.name
+            if (/bigint/ig.test(name)) {
+              right.name = right.name.replace(/bigint/ig, "BigInt")
+            } else if (isTypeLevelSchemaNameChanged(name)) {
+              const value: string | null = typeLevelSchemaChangedNames[name]
+              right.name = value === null
+                ? name.charAt(0).toUpperCase() + name.slice(1)
+                : value
+            }
+          }
+        }
+      })
+
     // const changeArguments = (
     //   api: string,
     //   changes: Record<string, string>,
@@ -325,9 +348,9 @@ export default function transformer(file: cs.FileInfo, api: cs.API) {
     () => findNamedImport(file, api, "@effect/schema", "Arbitrary"),
   )
 
-  const arbitraryChanges = (parseResultNamespace: string) => {
+  const arbitraryChanges = (arbitraryNamespace: string) => {
     root
-      .find(j.MemberExpression, { object: { name: parseResultNamespace } })
+      .find(j.MemberExpression, { object: { name: arbitraryNamespace } })
       .forEach(path => {
         const expr = path.value
         const property = expr.property
@@ -340,8 +363,65 @@ export default function transformer(file: cs.FileInfo, api: cs.API) {
       })
   }
 
+  const arbitraryTypeLevelChanges = (arbitraryNamespace: string) => {
+    root
+      .find(j.TSTypeReference, {
+        typeName: { left: { name: arbitraryNamespace } },
+      })
+      .forEach(path => {
+        const expr = path.value
+        const typeName = expr.typeName
+        if (typeName.type === "TSQualifiedName") {
+          const right = typeName.right
+          if (right.type === "Identifier") {
+            const name = right.name
+            if (isTypeLevelArbitraryNameChanged(name)) {
+              const value: string | null = typeLevelArbitraryChangedNames[name]
+              right.name = value === null
+                ? name.charAt(0).toUpperCase() + name.slice(1)
+                : value
+            }
+          }
+        }
+      })
+  }
+
   if (arbitraryNamespace !== undefined) {
     arbitraryChanges(arbitraryNamespace)
+    arbitraryTypeLevelChanges(arbitraryNamespace)
+  }
+
+  const arbitraryImportDeclarations = root.find(j.ImportDeclaration, {
+    source: { value: "@effect/schema/Arbitrary" },
+  })
+  if (arbitraryImportDeclarations.length > 0) {
+    let name: string | null = null
+    arbitraryImportDeclarations.forEach(path => {
+      if (path.value.importKind === "type") {
+        const specifiers = path.value.specifiers
+        if (specifiers) {
+          for (const specifier of specifiers) {
+            if (specifier.type === "ImportSpecifier") {
+              if (specifier.imported.name === "Arbitrary" && specifier.local) {
+                specifier.imported.name = "LazyArbitrary"
+                name = specifier.local.name
+                break
+              }
+            }
+          }
+        }
+      }
+      if (name && name === "Arbitrary") {
+        root
+          .find(j.TSTypeReference).forEach(path => {
+            const expr = path.value
+            const typeName = expr.typeName
+            if (typeName.type === "Identifier" && typeName.name === name) {
+              typeName.name = "LazyArbitrary"
+            }
+          })
+      }
+    })
   }
 
   return root.toSource()
@@ -464,6 +544,69 @@ const isSchemaNameChanged = (
   key: string,
 ): key is keyof typeof schemaChangedNames => key in schemaChangedNames
 
+const typeLevelSchemaChangedNames = {
+  literal: null,
+  enums: null,
+  $void: "Void",
+  $undefined: "Undefined",
+  $null: "Null",
+  never: null,
+  $unknown: "Unknown",
+  $any: "Any",
+  $string: "$String",
+  $number: "$Number",
+  $boolean: "$Boolean",
+  symbolFromSelf: null,
+  $object: "$Object",
+  union: null,
+  nullable: "NullOr",
+  orUndefined: "UndefinedOr",
+  nullish: "NullishOr",
+  tupleType: null,
+  tuple: null,
+  array: "$Array",
+  nonEmptyArray: null,
+  typeLiteral: null,
+  struct: null,
+  record: "$Record",
+  $symbol: "$Symbol",
+  optionFromSelf: null,
+  option: null,
+  optionFromNullable: "OptionFromNullOr",
+  optionFromNullish: "OptionFromNullishOr",
+  optionFromOrUndefined: "OptionFromUndefinedOr",
+  eitherFromSelf: null,
+  either: null,
+  eitherFromUnion: null,
+  readonlyMapFromSelf: null,
+  mapFromSelf: null,
+  readonlyMap: "$ReadonlyMap",
+  map: "$Map",
+  readonlySetFromSelf: null,
+  setFromSelf: null,
+  readonlySet: "$ReadonlySet",
+  set: "$Set",
+  chunkFromSelf: null,
+  chunk: null,
+  causeFromSelf: null,
+  cause: null,
+  exitFromSelf: null,
+  exit: null,
+  hashSetFromSelf: null,
+  hashSet: null,
+  hashMapFromSelf: null,
+  hashMap: null,
+  listFromSelf: null,
+  list: null,
+  sortedSetFromSelf: null,
+  sortedSet: null,
+}
+
+const isTypeLevelSchemaNameChanged = (
+  key: string,
+): key is keyof typeof typeLevelSchemaChangedNames =>
+  key in typeLevelSchemaChangedNames
+
 const formatterChangedNames = {
   formatIssue: "formatIssueSync",
   formatError: "formatErrorSync",
@@ -498,3 +641,12 @@ const arbitraryChangedNames = {
 const isArbitraryNameChanged = (
   key: string,
 ): key is keyof typeof arbitraryChangedNames => key in arbitraryChangedNames
+
+const typeLevelArbitraryChangedNames = {
+  Arbitrary: "LazyArbitrary",
+}
+
+const isTypeLevelArbitraryNameChanged = (
+  key: string,
+): key is keyof typeof typeLevelArbitraryChangedNames =>
+  key in typeLevelArbitraryChangedNames
