@@ -1,5 +1,11 @@
 # @effect/codemod
 
+## 0.0.8
+
+### Patch Changes
+
+- [#21](https://github.com/Effect-TS/codemod/pull/21) [`2154c5b`](https://github.com/Effect-TS/codemod/commit/2154c5b08429ff8d675d30ccfc2f13527fc007e9) Thanks [@gcanti](https://github.com/gcanti)! - add codemod for schema 0.65
+
 ## 0.0.7
 
 ### Patch Changes
