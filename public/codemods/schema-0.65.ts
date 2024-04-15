@@ -348,9 +348,9 @@ export default function transformer(file: cs.FileInfo, api: cs.API) {
     () => findNamedImport(file, api, "@effect/schema", "Arbitrary"),
   )
 
-  const arbitraryChanges = (parseResultNamespace: string) => {
+  const arbitraryChanges = (arbitraryNamespace: string) => {
     root
-      .find(j.MemberExpression, { object: { name: parseResultNamespace } })
+      .find(j.MemberExpression, { object: { name: arbitraryNamespace } })
       .forEach(path => {
         const expr = path.value
         const property = expr.property
@@ -363,8 +363,65 @@ export default function transformer(file: cs.FileInfo, api: cs.API) {
       })
   }
 
+  const arbitraryTypeLevelChanges = (arbitraryNamespace: string) => {
+    root
+      .find(j.TSTypeReference, {
+        typeName: { left: { name: arbitraryNamespace } },
+      })
+      .forEach(path => {
+        const expr = path.value
+        const typeName = expr.typeName
+        if (typeName.type === "TSQualifiedName") {
+          const right = typeName.right
+          if (right.type === "Identifier") {
+            const name = right.name
+            if (isTypeLevelArbitraryNameChanged(name)) {
+              const value: string | null = typeLevelArbitraryChangedNames[name]
+              right.name = value === null
+                ? name.charAt(0).toUpperCase() + name.slice(1)
+                : value
+            }
+          }
+        }
+      })
+  }
+
   if (arbitraryNamespace !== undefined) {
     arbitraryChanges(arbitraryNamespace)
+    arbitraryTypeLevelChanges(arbitraryNamespace)
+  }
+
+  const arbitraryImportDeclarations = root.find(j.ImportDeclaration, {
+    source: { value: "@effect/schema/Arbitrary" },
+  })
+  if (arbitraryImportDeclarations.length > 0) {
+    let name: string | null = null
+    arbitraryImportDeclarations.forEach(path => {
+      if (path.value.importKind === "type") {
+        const specifiers = path.value.specifiers
+        if (specifiers) {
+          for (const specifier of specifiers) {
+            if (specifier.type === "ImportSpecifier") {
+              if (specifier.imported.name === "Arbitrary" && specifier.local) {
+                specifier.imported.name = "LazyArbitrary"
+                name = specifier.local.name
+                break
+              }
+            }
+          }
+        }
+      }
+      if (name && name === "Arbitrary") {
+        root
+          .find(j.TSTypeReference).forEach(path => {
+            const expr = path.value
+            const typeName = expr.typeName
+            if (typeName.type === "Identifier" && typeName.name === name) {
+              typeName.name = "LazyArbitrary"
+            }
+          })
+      }
+    })
   }
 
   return root.toSource()
@@ -584,3 +641,12 @@ const arbitraryChangedNames = {
 const isArbitraryNameChanged = (
   key: string,
 ): key is keyof typeof arbitraryChangedNames => key in arbitraryChangedNames
+
+const typeLevelArbitraryChangedNames = {
+  Arbitrary: "LazyArbitrary",
+}
+
+const isTypeLevelArbitraryNameChanged = (
+  key: string,
+): key is keyof typeof typeLevelArbitraryChangedNames =>
+  key in typeLevelArbitraryChangedNames

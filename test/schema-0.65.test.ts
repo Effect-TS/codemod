@@ -607,6 +607,70 @@ const Person = Schema.Struct({
 
 const arb = Arbitrary.makeLazy(Person)`,
   )
+
+  expectTransformation(
+    "Arbitrary.LazyArbitrary (namespace import)",
+    `import type * as Arbitrary from "@effect/schema/Arbitrary"
+import * as S from "@effect/schema/Schema"
+
+const schema = S.string.annotations({
+  arbitrary: (): Arbitrary.Arbitrary<string> => fc => fc.string(),
+})`,
+    `import type * as Arbitrary from "@effect/schema/Arbitrary"
+import * as S from "@effect/schema/Schema"
+
+const schema = S.String.annotations({
+  arbitrary: (): Arbitrary.LazyArbitrary<string> => fc => fc.string(),
+})`,
+  )
+
+  expectTransformation(
+    "Arbitrary.LazyArbitrary (named import)",
+    `import { Schema } from "@effect/schema"
+import type { Arbitrary } from "@effect/schema"
+
+const schema = Schema.string.annotations({
+  arbitrary: (): Arbitrary.Arbitrary<string> => fc => fc.string(),
+})`,
+    `import { Schema } from "@effect/schema"
+import type { Arbitrary } from "@effect/schema"
+
+const schema = Schema.String.annotations({
+  arbitrary: (): Arbitrary.LazyArbitrary<string> => fc => fc.string(),
+})`,
+  )
+
+  expectTransformation(
+    "Arbitrary.LazyArbitrary (type named import)",
+    `import { Schema } from "@effect/schema"
+import type { Arbitrary } from "@effect/schema/Arbitrary"
+
+const schema = Schema.string.annotations({
+  arbitrary: (): Arbitrary<string> => fc => fc.string(),
+})`,
+    `import { Schema } from "@effect/schema"
+import type { LazyArbitrary } from "@effect/schema/Arbitrary"
+
+const schema = Schema.String.annotations({
+  arbitrary: (): LazyArbitrary<string> => fc => fc.string(),
+})`,
+  )
+
+  expectTransformation(
+    "Arbitrary.LazyArbitrary (type named import with binding)",
+    `import { Schema } from "@effect/schema"
+import type { Arbitrary as A } from "@effect/schema/Arbitrary"
+
+const schema = Schema.string.annotations({
+  arbitrary: (): A<string> => fc => fc.string(),
+})`,
+    `import { Schema } from "@effect/schema"
+import type { LazyArbitrary as A } from "@effect/schema/Arbitrary"
+
+const schema = Schema.String.annotations({
+  arbitrary: (): A<string> => fc => fc.string(),
+})`,
+  )
 })
 
 describe("type-level", () => {
