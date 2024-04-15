@@ -481,7 +481,7 @@ const issue = new ParseResult.TupleType(new AST.TupleType([], [], true), null, [
   )
 })
 
-describe("change arguments", () => {
+describe.skip("change arguments", () => {
   expectTransformation(
     "EitheFromSelf",
     `import { Schema } from "@effect/schema"

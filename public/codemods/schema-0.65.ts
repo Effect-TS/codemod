@@ -40,55 +40,55 @@ export default function transformer(file: cs.FileInfo, api: cs.API) {
         }
       })
 
-    const changeArguments = (
-      api: string,
-      changes: Record<string, string>,
-    ) => {
-      const calls = root.find(j.CallExpression, {
-        callee: {
-          type: "MemberExpression",
-          object: { name: schemaNamespace },
-          property: { name: api },
-        },
-      })
-      calls.forEach(callExpression => {
-        const arg = callExpression.node.arguments[0]
-        if (arg.type === "ObjectExpression") {
-          arg.properties.forEach(property => {
-            if (property.type === "ObjectProperty") {
-              if (property.key.type === "Identifier") {
-                const key = property.key.name
-                if (key in changes) {
-                  property.key.name = changes[key]
-                }
-              }
-            }
-          })
-        }
-      })
-    }
+    // const changeArguments = (
+    //   api: string,
+    //   changes: Record<string, string>,
+    // ) => {
+    //   const calls = root.find(j.CallExpression, {
+    //     callee: {
+    //       type: "MemberExpression",
+    //       object: { name: schemaNamespace },
+    //       property: { name: api },
+    //     },
+    //   })
+    //   calls.forEach(callExpression => {
+    //     const arg = callExpression.node.arguments[0]
+    //     if (arg.type === "ObjectExpression") {
+    //       arg.properties.forEach(property => {
+    //         if (property.type === "ObjectProperty") {
+    //           if (property.key.type === "Identifier") {
+    //             const key = property.key.name
+    //             if (key in changes) {
+    //               property.key.name = changes[key]
+    //             }
+    //           }
+    //         }
+    //       })
+    //     }
+    //   })
+    // }
 
-    changeArguments("EitherFromSelf", { right: "Right", left: "Left" })
-    changeArguments("Either", { right: "Right", left: "Left" })
-    changeArguments("EitherFromUnion", { right: "Right", left: "Left" })
-    changeArguments("ReadonlyMapFromSelf", { key: "Key", value: "Value" })
-    changeArguments("MapFromSelf", { key: "Key", value: "Value" })
-    changeArguments("ReadonlyMap", { key: "Key", value: "Value" })
-    changeArguments("Map", { key: "Key", value: "Value" })
-    changeArguments("CauseFromSelf", { error: "Error", defect: "Defect" })
-    changeArguments("Cause", { error: "Error", defect: "Defect" })
-    changeArguments("ExitFromSelf", {
-      failure: "Failure",
-      success: "Success",
-      defect: "Defect",
-    })
-    changeArguments("Exit", {
-      failure: "Failure",
-      success: "Success",
-      defect: "Defect",
-    })
-    changeArguments("HashMapFromSelf", { key: "Key", value: "Value" })
-    changeArguments("HashMap", { key: "Key", value: "Value" })
+    // changeArguments("EitherFromSelf", { right: "Right", left: "Left" })
+    // changeArguments("Either", { right: "Right", left: "Left" })
+    // changeArguments("EitherFromUnion", { right: "Right", left: "Left" })
+    // changeArguments("ReadonlyMapFromSelf", { key: "Key", value: "Value" })
+    // changeArguments("MapFromSelf", { key: "Key", value: "Value" })
+    // changeArguments("ReadonlyMap", { key: "Key", value: "Value" })
+    // changeArguments("Map", { key: "Key", value: "Value" })
+    // changeArguments("CauseFromSelf", { error: "Error", defect: "Defect" })
+    // changeArguments("Cause", { error: "Error", defect: "Defect" })
+    // changeArguments("ExitFromSelf", {
+    //   failure: "Failure",
+    //   success: "Success",
+    //   defect: "Defect",
+    // })
+    // changeArguments("Exit", {
+    //   failure: "Failure",
+    //   success: "Success",
+    //   defect: "Defect",
+    // })
+    // changeArguments("HashMapFromSelf", { key: "Key", value: "Value" })
+    // changeArguments("HashMap", { key: "Key", value: "Value" })
 
     const getDecodeEncodeOptions = (
       decode: ExpressionKind,
@@ -455,6 +455,9 @@ const schemaChangedNames = {
   list: null,
   sortedSetFromSelf: null,
   sortedSet: null,
+  literal: null,
+  enums: null,
+  templateLiteral: null,
 }
 
 const isSchemaNameChanged = (
