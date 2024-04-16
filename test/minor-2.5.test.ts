@@ -49,6 +49,12 @@ import * as Option from "effect/Option"`,
     `import type { ReadonlyArray, Option } from "effect"`,
     `import type { Array as ReadonlyArray, Option } from "effect"`,
   )
+
+  expectTransformation(
+    `import { ReadonlyArray as RA, Option } from "effect`,
+    `import { ReadonlyArray as RA, Option } from "effect"`,
+    `import { Array as RA, Option } from "effect"`,
+  )
 })
 
 describe("ReadonlyRecord -> Record", () => {
@@ -94,5 +100,11 @@ import * as Option from "effect/Option"`,
     `import type { ReadonlyRecord, Option } from "effect`,
     `import type { ReadonlyRecord, Option } from "effect"`,
     `import type { Record as ReadonlyRecord, Option } from "effect"`,
+  )
+
+  expectTransformation(
+    `import type { ReadonlyRecord as RR, Option } from "effect`,
+    `import type { ReadonlyRecord as RR, Option } from "effect"`,
+    `import type { Record as RR, Option } from "effect"`,
   )
 })
