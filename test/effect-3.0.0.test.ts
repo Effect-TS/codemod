@@ -1,7 +1,7 @@
 import { describe } from "vitest"
 import * as Utils from "../src/Utils"
 
-import transformer from "../public/codemods/minor-2.5"
+import transformer from "../public/codemods/effect-3.0.0"
 
 const expectTransformation = Utils.expectTransformation(transformer)
 
