@@ -1,5 +1,11 @@
 # @effect/codemod
 
+## 0.0.11
+
+### Patch Changes
+
+- [#27](https://github.com/Effect-TS/codemod/pull/27) [`712c2be`](https://github.com/Effect-TS/codemod/commit/712c2bef77d8d22419439c3dd5faa2b8f2214604) Thanks [@tim-smart](https://github.com/tim-smart)! - copy src to build output
+
 ## 0.0.10
 
 ### Patch Changes
