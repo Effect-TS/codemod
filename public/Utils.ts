@@ -2,22 +2,6 @@ import type { ExpressionKind } from "ast-types/gen/kinds"
 import * as Option from "effect/Option"
 import type cs from "jscodeshift"
 import type { Collection } from "jscodeshift/src/Collection"
-import * as TestUtils from "jscodeshift/src/testUtils"
-
-export const expectTransformation = (transformer: cs.Transform) =>
-(
-  description: string,
-  input: string,
-  output: string,
-) => {
-  TestUtils.defineInlineTest(
-    { default: transformer, parser: "ts" },
-    {},
-    input,
-    output,
-    description,
-  )
-}
 
 /**
  * - given `import * as Namespace from "source"` returns "Namespace"

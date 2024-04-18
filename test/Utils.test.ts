@@ -2,7 +2,8 @@ import * as Option from "effect/Option"
 import type cs from "jscodeshift"
 import type { Collection } from "jscodeshift/src/Collection"
 import { describe } from "vitest"
-import * as Utils from "../src/Utils"
+import * as Utils from "../public/Utils"
+import { expectTransformation } from "./Utils"
 
 const addOutput = (api: cs.API, ast: Collection<any>, value: string) => {
   const j = api.jscodeshift
@@ -29,42 +30,42 @@ describe("getNamespaceImport", () => {
     return ast.toSource()
   }
 
-  Utils.expectTransformation(T(false))(
+  expectTransformation(T(false))(
     `import * as Namespace from "xxx" (type = false)`,
     `import * as Namespace from "xxx"`,
     `import * as Namespace from "xxx"
 const output = "NOT_FOUND";`,
   )
 
-  Utils.expectTransformation(T(true))(
+  expectTransformation(T(true))(
     `import type * as Namespace from "xxx" (type = true)`,
     `import type * as Namespace from "xxx"`,
     `import type * as Namespace from "xxx"
 const output = "NOT_FOUND";`,
   )
 
-  Utils.expectTransformation(T(false))(
+  expectTransformation(T(false))(
     `import * as Namespace from "source" (type = false)`,
     `import * as Namespace from "source"`,
     `import * as Namespace from "source"
 const output = "Namespace";`,
   )
 
-  Utils.expectTransformation(T(true))(
+  expectTransformation(T(true))(
     `import * as Namespace from "source" (type = true)`,
     `import * as Namespace from "source"`,
     `import * as Namespace from "source"
 const output = "NOT_FOUND";`,
   )
 
-  Utils.expectTransformation(T(false))(
+  expectTransformation(T(false))(
     `import type * as Namespace from "source" (type = false)`,
     `import type * as Namespace from "source"`,
     `import type * as Namespace from "source"
 const output = "NOT_FOUND";`,
   )
 
-  Utils.expectTransformation(T(true))(
+  expectTransformation(T(true))(
     `import type * as Namespace from "source" (type = true)`,
     `import type * as Namespace from "source"`,
     `import type * as Namespace from "source"
@@ -89,56 +90,56 @@ describe("getNamedImport", () => {
     return ast.toSource()
   }
 
-  Utils.expectTransformation(T(false))(
+  expectTransformation(T(false))(
     `import { Named } from "source" (type = false)`,
     `import { Named } from "source"`,
     `import { Named } from "source"
 const output = "Named";`,
   )
 
-  Utils.expectTransformation(T(false))(
+  expectTransformation(T(false))(
     `import { Named as N } from "source" (type = false)`,
     `import { Named as N } from "source"`,
     `import { Named as N } from "source"
 const output = "N";`,
   )
 
-  Utils.expectTransformation(T(false))(
+  expectTransformation(T(false))(
     `import type { Named } from "source" (type = false)`,
     `import type { Named } from "source"`,
     `import type { Named } from "source"
 const output = "NOT_FOUND";`,
   )
 
-  Utils.expectTransformation(T(false))(
+  expectTransformation(T(false))(
     `import type { Named as N } from "source" (type = false)`,
     `import type { Named as N } from "source"`,
     `import type { Named as N } from "source"
 const output = "NOT_FOUND";`,
   )
 
-  Utils.expectTransformation(T(true))(
+  expectTransformation(T(true))(
     `import { Named } from "source" (type = true)`,
     `import { Named } from "source"`,
     `import { Named } from "source"
 const output = "NOT_FOUND";`,
   )
 
-  Utils.expectTransformation(T(true))(
+  expectTransformation(T(true))(
     `import { Named as N } from "source" (type = true)`,
     `import { Named as N } from "source"`,
     `import { Named as N } from "source"
 const output = "NOT_FOUND";`,
   )
 
-  Utils.expectTransformation(T(true))(
+  expectTransformation(T(true))(
     `import type { Named } from "source" (type = true)`,
     `import type { Named } from "source"`,
     `import type { Named } from "source"
 const output = "Named";`,
   )
 
-  Utils.expectTransformation(T(true))(
+  expectTransformation(T(true))(
     `import type { Named as N } from "source" (type = true)`,
     `import type { Named as N } from "source"`,
     `import type { Named as N } from "source"
@@ -159,7 +160,7 @@ describe("replaceImportSource", () => {
     return ast.toSource()
   }
 
-  Utils.expectTransformation(T)(
+  expectTransformation(T)(
     `import * as ReadonlyArray from "effect/ReadonlyArray`,
     `import * as ReadonlyArray from "effect/ReadonlyArray"
 import * as Option from "effect/Option"`,
@@ -167,7 +168,7 @@ import * as Option from "effect/Option"`,
 import * as Option from "effect/Option"`,
   )
 
-  Utils.expectTransformation(T)(
+  expectTransformation(T)(
     `import type * as ReadonlyArray from "effect/ReadonlyArray`,
     `import type * as ReadonlyArray from "effect/ReadonlyArray"
 import * as Option from "effect/Option"`,
@@ -175,7 +176,7 @@ import * as Option from "effect/Option"`,
 import * as Option from "effect/Option"`,
   )
 
-  Utils.expectTransformation(T)(
+  expectTransformation(T)(
     `import { range } from "effect/ReadonlyArray`,
     `import { range } from "effect/ReadonlyArray"
 import * as Option from "effect/Option"`,
@@ -183,7 +184,7 @@ import * as Option from "effect/Option"`,
 import * as Option from "effect/Option"`,
   )
 
-  Utils.expectTransformation(T)(
+  expectTransformation(T)(
     `import type { NonEmptyReadonlyArray } from "effect/ReadonlyArray`,
     `import type { NonEmptyReadonlyArray } from "effect/ReadonlyArray"
 import * as Option from "effect/Option"`,
@@ -206,13 +207,13 @@ describe("replaceNamedImport", () => {
     return ast.toSource()
   }
 
-  Utils.expectTransformation(T)(
+  expectTransformation(T)(
     `import { ReadonlyArray, Option } from "effect`,
     `import { ReadonlyArray, Option } from "effect"`,
     `import { Array as ReadonlyArray, Option } from "effect"`,
   )
 
-  Utils.expectTransformation(T)(
+  expectTransformation(T)(
     `import type { ReadonlyArray, Option } from "effect`,
     `import type { ReadonlyArray, Option } from "effect"`,
     `import type { Array as ReadonlyArray, Option } from "effect"`,
