@@ -1,4 +1,3 @@
-import * as Option from "effect/Option"
 import type cs from "jscodeshift"
 import type { Collection } from "jscodeshift/src/Collection"
 import { describe } from "vitest"
@@ -21,10 +20,7 @@ describe("getNamespaceImport", () => {
     addOutput(
       api,
       ast,
-      Option.getOrElse(
-        Utils.getNamespaceImport(file, api, "source", type),
-        () => "NOT_FOUND",
-      ),
+      Utils.getNamespaceImport(file, api, "source", type) ?? "NOT_FOUND",
     )
 
     return ast.toSource()
@@ -81,10 +77,7 @@ describe("getNamedImport", () => {
     addOutput(
       api,
       ast,
-      Option.getOrElse(
-        Utils.getNamedImport(file, api, "source", "Named", type),
-        () => "NOT_FOUND",
-      ),
+      Utils.getNamedImport(file, api, "source", "Named", type) ?? "NOT_FOUND",
     )
 
     return ast.toSource()

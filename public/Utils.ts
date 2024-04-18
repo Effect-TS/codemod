@@ -1,5 +1,4 @@
 import type { ExpressionKind } from "ast-types/gen/kinds"
-import * as Option from "effect/Option"
 import type cs from "jscodeshift"
 import type { Collection } from "jscodeshift/src/Collection"
 
@@ -12,16 +11,16 @@ export const getNamespaceImport = (
   api: cs.API,
   source: string,
   type: boolean,
-): Option.Option<string> => {
+): string | undefined => {
   const j = api.jscodeshift
   const importDeclarations = findImportDeclarations(file, api, source, type)
   if (importDeclarations.length > 0) {
     const name = importDeclarations.find(j.Identifier).get(0).node.name
     if (typeof name === "string") {
-      return Option.some(name)
+      return name
     }
   }
-  return Option.none()
+  return undefined
 }
 
 const findImportDeclarations = (
@@ -50,9 +49,9 @@ export const getNamedImport = (
   source: string,
   name: string,
   type: boolean,
-): Option.Option<string> => {
+): string | undefined => {
   const importDeclarations = findImportDeclarations(file, api, source, type)
-  let out: string | null = null
+  let out: string | undefined = undefined
   importDeclarations.forEach(path => {
     const specifiers = path.value.specifiers
     if (specifiers) {
@@ -70,7 +69,7 @@ export const getNamedImport = (
       }
     }
   })
-  return Option.fromNullable(out)
+  return out
 }
 
 /**
