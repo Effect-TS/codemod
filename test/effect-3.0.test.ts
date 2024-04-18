@@ -1,7 +1,7 @@
 import { describe } from "vitest"
 import * as Utils from "../src/Utils"
 
-import transformer from "../public/codemods/effect-3.0.0"
+import transformer from "../public/codemods/effect-3.0"
 
 const expectTransformation = Utils.expectTransformation(transformer)
 
@@ -106,5 +106,19 @@ import * as Option from "effect/Option"`,
     `import type { ReadonlyRecord as RR, Option } from "effect`,
     `import type { ReadonlyRecord as RR, Option } from "effect"`,
     `import type { Record as RR, Option } from "effect"`,
+  )
+
+  expectTransformation(
+    "unit -> void",
+    `Effect.unit
+Effect.asUnit
+Exit.unit
+Option.unit
+Stream.unit`,
+    `Effect.void
+Effect.asVoid
+Exit.void
+Option.void
+Stream.void`,
   )
 })

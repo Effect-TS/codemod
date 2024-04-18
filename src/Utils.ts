@@ -1,7 +1,8 @@
+import type { ExpressionKind } from "ast-types/gen/kinds"
 import * as Option from "effect/Option"
 import type cs from "jscodeshift"
 import type { Collection } from "jscodeshift/src/Collection"
-import * as TestUtils from "jscodeshift/src/TestUtils"
+import * as TestUtils from "jscodeshift/src/testUtils"
 
 export const expectTransformation = (transformer: cs.Transform) =>
 (
@@ -127,5 +128,37 @@ export const replaceNamedImport = (
         }
       }
     })
+  })
+}
+
+export const renameMember = (ast: ExpressionKind, name: string): void => {
+  switch (ast.type) {
+    case "Identifier": {
+      ast.name = name
+      return
+    }
+    case "MemberExpression": {
+      return renameMember(ast.property, name)
+    }
+    default: {
+      return
+    }
+  }
+}
+
+export const renameMembers = (
+  api: cs.API,
+  ast: Collection<any>,
+  object: string,
+  fromProp: string,
+  toProp: string,
+) => {
+  const j = api.jscodeshift
+  ast.find(j.MemberExpression).filter(_ =>
+    _.node.object.type === "Identifier" && _.node.object.name === object
+  ).filter(_ =>
+    _.node.property.type === "Identifier" && _.node.property.name === fromProp
+  ).forEach(ast => {
+    renameMember(ast.value, toProp)
   })
 }

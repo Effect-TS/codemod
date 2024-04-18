@@ -2,4 +2,4 @@
 "@effect/codemod": patch
 ---
 
-add codemod for effect minor 2.5
+add codemod for effect major 3.0
