@@ -1,5 +1,5 @@
 import type cs from "jscodeshift"
-import * as Utils from "../../src/Utils"
+import * as Utils from "../Utils"
 
 export default function transformer(file: cs.FileInfo, api: cs.API) {
   const j = api.jscodeshift
