@@ -1,5 +1,11 @@
 # @effect/codemod
 
+## 0.0.10
+
+### Patch Changes
+
+- [#25](https://github.com/Effect-TS/codemod/pull/25) [`740d77e`](https://github.com/Effect-TS/codemod/commit/740d77e05879f7ada1c2b84d1987ce05277ebac2) Thanks [@gcanti](https://github.com/gcanti)! - add codemod for effect major 3.0
+
 ## 0.0.9
 
 ### Patch Changes
