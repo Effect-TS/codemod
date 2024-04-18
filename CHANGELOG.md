@@ -1,5 +1,11 @@
 # @effect/codemod
 
+## 0.0.12
+
+### Patch Changes
+
+- [#29](https://github.com/Effect-TS/codemod/pull/29) [`d2577cc`](https://github.com/Effect-TS/codemod/commit/d2577cc799635aee444c717cb9bf70b0db3a104a) Thanks [@tim-smart](https://github.com/tim-smart)! - move Utils to public directory
+
 ## 0.0.11
 
 ### Patch Changes
