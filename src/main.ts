@@ -4,15 +4,15 @@ import * as Args from "@effect/cli/Args"
 import * as Command from "@effect/cli/Command"
 import * as Options from "@effect/cli/Options"
 import * as NodeContext from "@effect/platform-node/NodeContext"
+import * as Array from "effect/Array"
 import * as Console from "effect/Console"
 import * as Effect from "effect/Effect"
-import * as ReadonlyArray from "effect/ReadonlyArray"
 import * as jscodeshift from "jscodeshift/src/Runner"
 import * as Fs from "node:fs"
 import * as Path from "node:path"
 
 const codemod = Args.choice(
-  ReadonlyArray.map(
+  Array.map(
     Fs.readdirSync(`${__dirname}/codemods`),
     file => [
       Path.basename(file, ".ts"),
