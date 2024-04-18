@@ -1,5 +1,11 @@
 # @effect/codemod
 
+## 0.0.13
+
+### Patch Changes
+
+- [#31](https://github.com/Effect-TS/codemod/pull/31) [`ce6e3c5`](https://github.com/Effect-TS/codemod/commit/ce6e3c51134bb110e31e85e0c0ec55f1ecda9115) Thanks [@tim-smart](https://github.com/tim-smart)! - remove use of "effect" in utils
+
 ## 0.0.12
 
 ### Patch Changes
