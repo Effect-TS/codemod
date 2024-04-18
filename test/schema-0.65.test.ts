@@ -1,4 +1,4 @@
-import * as TestUtils from "jscodeshift/src/TestUtils"
+import * as TestUtils from "jscodeshift/src/testUtils"
 import { describe } from "vitest"
 
 import transformer from "../public/codemods/schema-0.65"
