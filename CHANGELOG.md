@@ -1,5 +1,26 @@
 # @effect/codemod
 
+## 0.0.14
+
+### Patch Changes
+
+- [#34](https://github.com/Effect-TS/codemod/pull/34) [`bfc890c`](https://github.com/Effect-TS/codemod/commit/bfc890c7b45837c566dc8de482fe1b0806c290e0) Thanks [@mikearnaldi](https://github.com/mikearnaldi)! - Add effect-3.0.4 mod to remove gen adapter
+
+  NOTE: some edge cases are uncovered like:
+
+  ```ts
+  yield * $([Effect.succeed(0), Effect.succeed(1)] as const, Effect.allWith());
+  ```
+
+  that needs to be convered to:
+
+  ```ts
+  yield *
+    pipe([Effect.succeed(0), Effect.succeed(1)] as const, Effect.allWith());
+  ```
+
+  Unfortunately not having type information in the mod tool renders impossible to decide if the `pipe` function is present or not.
+
 ## 0.0.13
 
 ### Patch Changes
