@@ -1,5 +1,11 @@
 # @effect/codemod
 
+## 0.0.15
+
+### Patch Changes
+
+- [#37](https://github.com/Effect-TS/codemod/pull/37) [`16a45d3`](https://github.com/Effect-TS/codemod/commit/16a45d303bbce1c659d7bb0cc8a91f09d8224f13) Thanks [@gcanti](https://github.com/gcanti)! - Fix: Update import from `formatError` to `formatErrorSync` in the schema 0.65 codemod, closes #36
+
 ## 0.0.14
 
 ### Patch Changes
