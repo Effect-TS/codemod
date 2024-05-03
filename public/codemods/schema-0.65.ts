@@ -6,6 +6,7 @@ import type { ExpressionKind } from "ast-types/gen/kinds"
 import type { namedTypes } from "ast-types/gen/namedTypes"
 import type { NodePath } from "ast-types/lib/node-path"
 import type cs from "jscodeshift"
+import type { Collection } from "jscodeshift/src/Collection"
 
 type ASTPath<N> = NodePath<N, N>
 
@@ -285,6 +286,20 @@ export default function transformer(file: cs.FileInfo, api: cs.API) {
   if (treeFormatterNamespace !== undefined) {
     formatterChanges(treeFormatterNamespace)
   }
+  replaceNamespaceImport(
+    api,
+    root,
+    "@effect/schema/TreeFormatter",
+    "formatError",
+    "formatErrorSync",
+  )
+  replaceNamespaceImport(
+    api,
+    root,
+    "@effect/schema/TreeFormatter",
+    "formatErrorEffect",
+    "formatError",
+  )
 
   const arrayFormatterNamespace = orElse(
     findNamespaceImport(file, api, "@effect/schema/ArrayFormatter"),
@@ -294,6 +309,20 @@ export default function transformer(file: cs.FileInfo, api: cs.API) {
   if (arrayFormatterNamespace !== undefined) {
     formatterChanges(arrayFormatterNamespace)
   }
+  replaceNamespaceImport(
+    api,
+    root,
+    "@effect/schema/ArrayFormatter",
+    "formatError",
+    "formatErrorSync",
+  )
+  replaceNamespaceImport(
+    api,
+    root,
+    "@effect/schema/ArrayFormatter",
+    "formatErrorEffect",
+    "formatError",
+  )
 
   const astNamespace = orElse(
     findNamespaceImport(file, api, "@effect/schema/AST"),
@@ -446,6 +475,44 @@ const findNamespaceImport = (
     }
   }
   return undefined
+}
+
+const replaceNamespaceImport = (
+  api: cs.API,
+  root: Collection<any>,
+  source: string,
+  from: string,
+  to: string,
+) => {
+  const j = api.jscodeshift
+  const importDeclarations = root.find(j.ImportDeclaration, {
+    source: { value: source },
+  })
+  importDeclarations.forEach(path => {
+    const specifiers = path.value.specifiers
+    if (specifiers) {
+      for (const specifier of specifiers) {
+        if (specifier.type === "ImportSpecifier") {
+          if (specifier.imported.name === from && specifier.local) {
+            specifier.imported.name = to
+
+            root.find(j.CallExpression, {
+              callee: { name: from },
+            }).forEach(path => {
+              if (
+                path.value.callee.type === "Identifier"
+                && path.value.callee.name === from
+              ) {
+                path.value.callee.name = to
+              }
+            })
+
+            break
+          }
+        }
+      }
+    }
+  })
 }
 
 const findNamedImport = (
