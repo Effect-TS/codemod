@@ -363,7 +363,43 @@ class C extends A.transformOrFailFrom<C>("C")({ b: Schema.Number }, {
 
 describe("TreeFormatter", () => {
   expectTransformation(
-    "formatIssue / formatIssueEffect",
+    `import { formatError } from "@effect/schema/TreeFormatter"`,
+    `import { formatError } from "@effect/schema/TreeFormatter"
+
+formatError(ParseResult.parseError(err))`,
+    `import { formatErrorSync } from "@effect/schema/TreeFormatter"
+
+formatErrorSync(ParseResult.parseError(err))`,
+  )
+
+  expectTransformation(
+    `import { formatErrorEffect } from "@effect/schema/TreeFormatter"`,
+    `import { formatErrorEffect } from "@effect/schema/TreeFormatter"
+
+formatErrorEffect(ParseResult.parseError(err))`,
+    `import { formatError } from "@effect/schema/TreeFormatter"
+
+formatError(ParseResult.parseError(err))`,
+  )
+
+  expectTransformation(
+    `import { formatError, formatErrorEffect } from "@effect/schema/TreeFormatter"`,
+    `import { formatError, formatErrorEffect } from "@effect/schema/TreeFormatter"
+
+formatError(ParseResult.parseError(err1))
+formatErrorEffect(ParseResult.parseError(err2))
+formatError(ParseResult.parseError(err3))
+formatErrorEffect(ParseResult.parseError(err4))`,
+    `import { formatErrorSync, formatError } from "@effect/schema/TreeFormatter"
+
+formatErrorSync(ParseResult.parseError(err1))
+formatError(ParseResult.parseError(err2))
+formatErrorSync(ParseResult.parseError(err3))
+formatError(ParseResult.parseError(err4))`,
+  )
+
+  expectTransformation(
+    "TreeFormatter.formatIssue / TreeFormatter.formatIssueEffect",
     `import { ParseResult, Schema, TreeFormatter } from "@effect/schema"
 
 const message1 = TreeFormatter.formatIssueEffect(
@@ -385,7 +421,7 @@ const message2 = TreeFormatter.formatIssueSync(
   )
 
   expectTransformation(
-    "formatError / formatErrorEffect",
+    "TreeFormatter.formatError / TreeFormatter.formatErrorEffect",
     `import { ParseResult, Schema, TreeFormatter } from "@effect/schema"
 
 const message1 = TreeFormatter.formatErrorEffect(
@@ -409,7 +445,43 @@ const message2 = TreeFormatter.formatErrorSync(
 
 describe("ArrayFormatter", () => {
   expectTransformation(
-    "formatIssue / formatIssueEffect",
+    `import { formatError } from "@effect/schema/ArrayFormatter"`,
+    `import { formatError } from "@effect/schema/ArrayFormatter"
+
+formatError(ParseResult.parseError(err))`,
+    `import { formatErrorSync } from "@effect/schema/ArrayFormatter"
+
+formatErrorSync(ParseResult.parseError(err))`,
+  )
+
+  expectTransformation(
+    `import { formatErrorEffect } from "@effect/schema/ArrayFormatter"`,
+    `import { formatErrorEffect } from "@effect/schema/ArrayFormatter"
+
+formatErrorEffect(ParseResult.parseError(err))`,
+    `import { formatError } from "@effect/schema/ArrayFormatter"
+
+formatError(ParseResult.parseError(err))`,
+  )
+
+  expectTransformation(
+    `import { formatError, formatErrorEffect } from "@effect/schema/ArrayFormatter"`,
+    `import { formatError, formatErrorEffect } from "@effect/schema/ArrayFormatter"
+
+formatError(ParseResult.parseError(err1))
+formatErrorEffect(ParseResult.parseError(err2))
+formatError(ParseResult.parseError(err3))
+formatErrorEffect(ParseResult.parseError(err4))`,
+    `import { formatErrorSync, formatError } from "@effect/schema/ArrayFormatter"
+
+formatErrorSync(ParseResult.parseError(err1))
+formatError(ParseResult.parseError(err2))
+formatErrorSync(ParseResult.parseError(err3))
+formatError(ParseResult.parseError(err4))`,
+  )
+
+  expectTransformation(
+    "ArrayFormatter.formatIssue / ArrayFormatter.formatIssueEffect",
     `import { ParseResult, Schema, ArrayFormatter } from "@effect/schema"
 
 const message1 = ArrayFormatter.formatIssueEffect(
@@ -431,7 +503,7 @@ const message2 = ArrayFormatter.formatIssueSync(
   )
 
   expectTransformation(
-    "formatError / formatErrorEffect",
+    "ArrayFormatter.formatError / ArrayFormatter.formatErrorEffect",
     `import { ParseResult, Schema, ArrayFormatter } from "@effect/schema"
 
 const message1 = ArrayFormatter.formatErrorEffect(
