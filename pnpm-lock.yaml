@@ -4,6 +4,14 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+patchedDependencies:
+  '@changesets/assemble-release-plan@6.0.3':
+    hash: y22bysylkwhu5afnwgbq3z5xjy
+    path: patches/@changesets__assemble-release-plan@6.0.3.patch
+  '@changesets/get-github-info@0.6.0':
+    hash: 4nwpuevfciovsbhi25hd4g5r7y
+    path: patches/@changesets__get-github-info@0.6.0.patch
+
 importers:
 
   .:
@@ -3793,7 +3801,7 @@ snapshots:
       resolve-from: 5.0.0
       semver: 7.6.3
 
-  '@changesets/assemble-release-plan@6.0.3':
+  '@changesets/assemble-release-plan@6.0.3(patch_hash=y22bysylkwhu5afnwgbq3z5xjy)':
     dependencies:
       '@babel/runtime': 7.24.8
       '@changesets/errors': 0.2.0
@@ -3809,7 +3817,7 @@ snapshots:
 
   '@changesets/changelog-github@0.5.0':
     dependencies:
-      '@changesets/get-github-info': 0.6.0
+      '@changesets/get-github-info': 0.6.0(patch_hash=4nwpuevfciovsbhi25hd4g5r7y)
       '@changesets/types': 6.0.0
       dotenv: 8.6.0
     transitivePeerDependencies:
@@ -3819,7 +3827,7 @@ snapshots:
     dependencies:
       '@babel/runtime': 7.24.8
       '@changesets/apply-release-plan': 7.0.4
-      '@changesets/assemble-release-plan': 6.0.3
+      '@changesets/assemble-release-plan': 6.0.3(patch_hash=y22bysylkwhu5afnwgbq3z5xjy)
       '@changesets/changelog-git': 0.2.0
       '@changesets/config': 3.0.2
       '@changesets/errors': 0.2.0
@@ -3872,7 +3880,7 @@ snapshots:
       fs-extra: 7.0.1
       semver: 7.6.3
 
-  '@changesets/get-github-info@0.6.0':
+  '@changesets/get-github-info@0.6.0(patch_hash=4nwpuevfciovsbhi25hd4g5r7y)':
     dependencies:
       dataloader: 1.4.0
       node-fetch: 2.7.0
@@ -3882,7 +3890,7 @@ snapshots:
   '@changesets/get-release-plan@4.0.3':
     dependencies:
       '@babel/runtime': 7.24.8
-      '@changesets/assemble-release-plan': 6.0.3
+      '@changesets/assemble-release-plan': 6.0.3(patch_hash=y22bysylkwhu5afnwgbq3z5xjy)
       '@changesets/config': 3.0.2
       '@changesets/pre': 2.0.0
       '@changesets/read': 0.6.0
