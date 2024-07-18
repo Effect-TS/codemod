@@ -64,6 +64,22 @@ export default function transformer(file: cs.FileInfo, api: cs.API) {
         },
       }).forEach(replaceTaggedRequestArguments)
     })
+
+    Utils.renameMembers(
+      api,
+      root,
+      schemaNamespace,
+      "NonEmpty",
+      "NonEmptyString",
+    )
+
+    Utils.renameMembers(
+      api,
+      root,
+      schemaNamespace,
+      "nonEmpty",
+      "nonEmptyString",
+    )
   }
 
   const directRecordImport = Utils.getNamedImport(

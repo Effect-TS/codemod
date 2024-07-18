@@ -124,3 +124,23 @@ class UserList extends TR<UserList>()("UserList", {
 }) {}`,
   )
 })
+
+describe("NonEmpty", () => {
+  expectTransformation(
+    "named import",
+    `import { Schema } from "@effect/schema"
+const schema = Schema.NonEmpty`,
+    `import { Schema } from "@effect/schema"
+const schema = Schema.NonEmptyString`,
+  )
+})
+
+describe("nonEmpty()", () => {
+  expectTransformation(
+    "named import",
+    `import { Schema } from "@effect/schema"
+const schema = Schema.String.pipe(Schema.nonEmpty())`,
+    `import { Schema } from "@effect/schema"
+const schema = Schema.String.pipe(Schema.nonEmptyString())`,
+  )
+})

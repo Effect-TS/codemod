@@ -142,11 +142,12 @@ export const renameMembers = (
   toProp: string,
 ) => {
   const j = api.jscodeshift
-  ast.find(j.MemberExpression).filter(_ =>
-    _.node.object.type === "Identifier" && _.node.object.name === object
-  ).filter(_ =>
-    _.node.property.type === "Identifier" && _.node.property.name === fromProp
-  ).forEach(ast => {
-    renameMember(ast.value, toProp)
+  ast.find(j.MemberExpression).filter(path =>
+    path.node.object.type === "Identifier" && path.node.object.name === object
+  ).filter(path =>
+    path.node.property.type === "Identifier"
+    && path.node.property.name === fromProp
+  ).forEach(path => {
+    renameMember(path.value, toProp)
   })
 }
