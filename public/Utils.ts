@@ -2,6 +2,11 @@ import type { ExpressionKind } from "ast-types/gen/kinds"
 import type cs from "jscodeshift"
 import type { Collection } from "jscodeshift/src/Collection"
 
+export const orElse = <A>(
+  x: A | undefined,
+  f: () => A | undefined,
+): A | undefined => x === undefined ? f() : x
+
 /**
  * - given `import * as Namespace from "source"` returns "Namespace"
  * - given `import type * as Namespace from "source"` returns "Namespace"
