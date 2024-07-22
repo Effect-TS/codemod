@@ -144,3 +144,78 @@ const schema = Schema.String.pipe(Schema.nonEmpty())`,
 const schema = Schema.String.pipe(Schema.nonEmptyString())`,
   )
 })
+
+describe("optional()", () => {
+  expectTransformation(
+    "named import",
+    `import { Schema } from "@effect/schema"
+const schema = Schema.String.pipe(Schema.optional())`,
+    `import { Schema } from "@effect/schema"
+const schema = Schema.String.pipe(Schema.optional)`,
+  )
+  expectTransformation(
+    "named import",
+    `import { Schema } from "@effect/schema"
+  const schema = Schema.optional(Schema.String)`,
+    `import { Schema } from "@effect/schema"
+  const schema = Schema.optional(Schema.String)`,
+  )
+})
+
+describe("optional({ ... }) / optional(schema, { ... })", () => {
+  expectTransformation(
+    "named import",
+    `import { Schema } from "@effect/schema"
+const schema = Schema.String.pipe(Schema.optional({ exact: true }))`,
+    `import { Schema } from "@effect/schema"
+const schema = Schema.String.pipe(Schema.optionalWith({ exact: true }))`,
+  )
+  expectTransformation(
+    "named import",
+    `import { Schema } from "@effect/schema"
+const schema = Schema.optional(Schema.String, { exact: true })`,
+    `import { Schema } from "@effect/schema"
+const schema = Schema.optionalWith(Schema.String, { exact: true })`,
+  )
+})
+
+describe("partial()", () => {
+  expectTransformation(
+    "named import",
+    `import { Schema } from "@effect/schema"
+const schema = Schema.Struct({ a: Schema.Number }).pipe(Schema.partial())`,
+    `import { Schema } from "@effect/schema"
+const schema = Schema.Struct({ a: Schema.Number }).pipe(Schema.partial)`,
+  )
+  expectTransformation(
+    "named import",
+    `import { Schema as S } from "@effect/schema"
+const schema = S.Struct({ a: S.Number }).pipe(S.partial())`,
+    `import { Schema as S } from "@effect/schema"
+const schema = S.Struct({ a: S.Number }).pipe(S.partial)`,
+  )
+  expectTransformation(
+    "named import",
+    `import { Schema } from "@effect/schema"
+const schema = Schema.partial(Schema.Struct({ a: Schema.Number }))`,
+    `import { Schema } from "@effect/schema"
+const schema = Schema.partial(Schema.Struct({ a: Schema.Number }))`,
+  )
+})
+
+describe("partial({ ... }) / optional(partial, { ... })", () => {
+  expectTransformation(
+    "named import",
+    `import { Schema } from "@effect/schema"
+const schema = Schema.Struct({ a: Schema.Number }).pipe(Schema.partial({ exact: true }))`,
+    `import { Schema } from "@effect/schema"
+const schema = Schema.Struct({ a: Schema.Number }).pipe(Schema.partialWith({ exact: true }))`,
+  )
+  expectTransformation(
+    "named import",
+    `import { Schema } from "@effect/schema"
+const schema = Schema.partial(Schema.Struct({ a: Schema.Number }), { exact: true })`,
+    `import { Schema } from "@effect/schema"
+const schema = Schema.partialWith(Schema.Struct({ a: Schema.Number }), { exact: true })`,
+  )
+})
