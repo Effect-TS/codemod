@@ -2,6 +2,11 @@ import type { ExpressionKind } from "ast-types/gen/kinds"
 import type cs from "jscodeshift"
 import type { Collection } from "jscodeshift/src/Collection"
 
+export const orElse = <A>(
+  x: A | undefined,
+  f: () => A | undefined,
+): A | undefined => x === undefined ? f() : x
+
 /**
  * - given `import * as Namespace from "source"` returns "Namespace"
  * - given `import type * as Namespace from "source"` returns "Namespace"
@@ -137,11 +142,12 @@ export const renameMembers = (
   toProp: string,
 ) => {
   const j = api.jscodeshift
-  ast.find(j.MemberExpression).filter(_ =>
-    _.node.object.type === "Identifier" && _.node.object.name === object
-  ).filter(_ =>
-    _.node.property.type === "Identifier" && _.node.property.name === fromProp
-  ).forEach(ast => {
-    renameMember(ast.value, toProp)
+  ast.find(j.MemberExpression).filter(path =>
+    path.node.object.type === "Identifier" && path.node.object.name === object
+  ).filter(path =>
+    path.node.property.type === "Identifier"
+    && path.node.property.name === fromProp
+  ).forEach(path => {
+    renameMember(path.value, toProp)
   })
 }
