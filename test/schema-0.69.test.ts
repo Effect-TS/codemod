@@ -219,3 +219,43 @@ const schema = Schema.partial(Schema.Struct({ a: Schema.Number }), { exact: true
 const schema = Schema.partialWith(Schema.Struct({ a: Schema.Number }), { exact: true })`,
   )
 })
+
+describe("Base64 -> Uint8ArrayFromBase64", () => {
+  expectTransformation(
+    "named import",
+    `import { Schema } from "@effect/schema"
+const schema = Schema.Base64`,
+    `import { Schema } from "@effect/schema"
+const schema = Schema.Uint8ArrayFromBase64`,
+  )
+})
+
+describe("Base64Url -> Uint8ArrayFromBase64Url", () => {
+  expectTransformation(
+    "named import",
+    `import { Schema } from "@effect/schema"
+const schema = Schema.Base64Url`,
+    `import { Schema } from "@effect/schema"
+const schema = Schema.Uint8ArrayFromBase64Url`,
+  )
+})
+
+describe("Hex -> Uint8ArrayFromHex", () => {
+  expectTransformation(
+    "named import",
+    `import { Schema } from "@effect/schema"
+const schema = Schema.Hex`,
+    `import { Schema } from "@effect/schema"
+const schema = Schema.Uint8ArrayFromHex`,
+  )
+})
+
+describe("CauseDefectUnknown -> Defect", () => {
+  expectTransformation(
+    "named import",
+    `import { Schema } from "@effect/schema"
+const schema = Schema.CauseDefectUnknown`,
+    `import { Schema } from "@effect/schema"
+const schema = Schema.Defect`,
+  )
+})

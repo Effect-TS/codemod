@@ -219,6 +219,54 @@ export default function transformer(file: cs.FileInfo, api: cs.API) {
         ))
       }
     })
+
+    // ---------------------------------------------------------------
+    // Base64 -> Uint8ArrayFromBase64
+    // ---------------------------------------------------------------
+
+    Utils.renameMembers(
+      api,
+      root,
+      schemaNamespace,
+      "Base64",
+      "Uint8ArrayFromBase64",
+    )
+
+    // ---------------------------------------------------------------
+    // Base64Url -> Uint8ArrayFromBase64Url
+    // ---------------------------------------------------------------
+
+    Utils.renameMembers(
+      api,
+      root,
+      schemaNamespace,
+      "Base64Url",
+      "Uint8ArrayFromBase64Url",
+    )
+
+    // ---------------------------------------------------------------
+    // Hex -> Uint8ArrayFromHex
+    // ---------------------------------------------------------------
+
+    Utils.renameMembers(
+      api,
+      root,
+      schemaNamespace,
+      "Hex",
+      "Uint8ArrayFromHex",
+    )
+
+    // ---------------------------------------------------------------
+    // CauseDefectUnknown -> Defect
+    // ---------------------------------------------------------------
+
+    Utils.renameMembers(
+      api,
+      root,
+      schemaNamespace,
+      "CauseDefectUnknown",
+      "Defect",
+    )
   }
 
   return root.toSource()
