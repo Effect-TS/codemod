@@ -1,5 +1,13 @@
 # @effect/codemod
 
+## 0.0.16
+
+### Patch Changes
+
+- [#39](https://github.com/Effect-TS/codemod/pull/39) [`183d054`](https://github.com/Effect-TS/codemod/commit/183d0541942406ad6d2c6959d2d7fb0ed1d05b47) Thanks @gcanti! - schema-0.69 codemod
+
+- [#40](https://github.com/Effect-TS/codemod/pull/40) [`97a4978`](https://github.com/Effect-TS/codemod/commit/97a4978786930dfbe938bf5e6f00928dbfd8d452) Thanks @IMax153! - update to latest jscodeshift
+
 ## 0.0.15
 
 ### Patch Changes
