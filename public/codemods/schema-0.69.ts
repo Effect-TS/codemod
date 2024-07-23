@@ -267,6 +267,47 @@ export default function transformer(file: cs.FileInfo, api: cs.API) {
       "CauseDefectUnknown",
       "Defect",
     )
+
+    // ---------------------------------------------------------------
+    // ExitFromSelf, Exit, CauseFromSelf, Cause
+    // ---------------------------------------------------------------
+
+    const addDefect = (api: string) =>
+      root.find(j.CallExpression, {
+        callee: {
+          type: "MemberExpression",
+          object: { name: schemaNamespace },
+          property: { name: api },
+        },
+      }).forEach(path => {
+        const args = path.value.arguments
+        if (args.length === 1 && args[0].type === "ObjectExpression") {
+          const properties = args[0].properties
+          if (
+            !properties.some(prop => {
+              return prop.type === "ObjectProperty"
+                && prop.key.type === "Identifier"
+                && prop.key.name === "defect"
+            })
+          ) {
+            properties.push(
+              j.property(
+                "init",
+                j.identifier("defect"),
+                j.memberExpression(
+                  j.identifier(schemaNamespace),
+                  j.identifier("Defect"),
+                ),
+              ),
+            )
+          }
+        }
+      })
+
+    addDefect("ExitFromSelf")
+    addDefect("Exit")
+    addDefect("CauseFromSelf")
+    addDefect("Cause")
   }
 
   return root.toSource()

@@ -259,3 +259,92 @@ const schema = Schema.CauseDefectUnknown`,
 const schema = Schema.Defect`,
   )
 })
+
+describe("ExitFromSelf", () => {
+  expectTransformation(
+    "explicit defect",
+    `import { Schema as S } from "@effect/schema"
+const schema = S.ExitFromSelf({ failure: S.String, success: S.Number, defect: S.Unknown })`,
+    `import { Schema as S } from "@effect/schema"
+const schema = S.ExitFromSelf({ failure: S.String, success: S.Number, defect: S.Unknown })`,
+  )
+  expectTransformation(
+    "explicit defect with CauseDefectUnknown",
+    `import { Schema as S } from "@effect/schema"
+const schema = S.ExitFromSelf({ failure: S.String, success: S.Number, defect: S.CauseDefectUnknown })`,
+    `import { Schema as S } from "@effect/schema"
+const schema = S.ExitFromSelf({ failure: S.String, success: S.Number, defect: S.Defect })`,
+  )
+  expectTransformation(
+    "implicit defect",
+    `import { Schema as S } from "@effect/schema"
+const schema = S.ExitFromSelf({ failure: S.String, success: S.Number })`,
+    `import { Schema as S } from "@effect/schema"
+const schema = S.ExitFromSelf({
+  failure: S.String,
+  success: S.Number,
+  defect: S.Defect
+})`,
+  )
+})
+
+describe("Exit", () => {
+  expectTransformation(
+    "explicit defect",
+    `import { Schema as S } from "@effect/schema"
+const schema = S.Exit({ failure: S.String, success: S.Number, defect: S.Unknown })`,
+    `import { Schema as S } from "@effect/schema"
+const schema = S.Exit({ failure: S.String, success: S.Number, defect: S.Unknown })`,
+  )
+  expectTransformation(
+    "implicit defect",
+    `import { Schema as S } from "@effect/schema"
+const schema = S.Exit({ failure: S.String, success: S.Number })`,
+    `import { Schema as S } from "@effect/schema"
+const schema = S.Exit({
+  failure: S.String,
+  success: S.Number,
+  defect: S.Defect
+})`,
+  )
+})
+
+describe("CauseFromSelf", () => {
+  expectTransformation(
+    "explicit defect",
+    `import { Schema as S } from "@effect/schema"
+const schema = S.CauseFromSelf({ error: S.NumberFromString, defect: S.Unknown })`,
+    `import { Schema as S } from "@effect/schema"
+const schema = S.CauseFromSelf({ error: S.NumberFromString, defect: S.Unknown })`,
+  )
+  expectTransformation(
+    "implicit defect",
+    `import { Schema as S } from "@effect/schema"
+const schema = S.CauseFromSelf({ error: S.NumberFromString })`,
+    `import { Schema as S } from "@effect/schema"
+const schema = S.CauseFromSelf({
+  error: S.NumberFromString,
+  defect: S.Defect
+})`,
+  )
+})
+
+describe("Cause", () => {
+  expectTransformation(
+    "explicit defect",
+    `import { Schema as S } from "@effect/schema"
+const schema = S.Cause({ error: S.NumberFromString, defect: S.Unknown })`,
+    `import { Schema as S } from "@effect/schema"
+const schema = S.Cause({ error: S.NumberFromString, defect: S.Unknown })`,
+  )
+  expectTransformation(
+    "implicit defect",
+    `import { Schema as S } from "@effect/schema"
+const schema = S.Cause({ error: S.NumberFromString })`,
+    `import { Schema as S } from "@effect/schema"
+const schema = S.Cause({
+  error: S.NumberFromString,
+  defect: S.Defect
+})`,
+  )
+})
